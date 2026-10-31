@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { screen } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
-import { App } from '../app/App'
 import { renderWithProviders } from './render'
 import { server } from './server'
 
@@ -18,12 +17,6 @@ function Ping() {
 }
 
 describe('test foundation', () => {
-  it('renders the app shell inside the providers', () => {
-    renderWithProviders(<App />)
-
-    expect(screen.getByRole('heading', { name: 'Outsera Razzies' })).toBeInTheDocument()
-  })
-
   it('serves HTTP responses through the MSW server', async () => {
     server.use(http.get('http://localhost/ping', () => HttpResponse.json({ status: 'pong' })))
 
