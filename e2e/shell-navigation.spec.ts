@@ -69,7 +69,7 @@ test('no horizontal scroll; header and menu stay in place while tall content scr
 })
 
 test('with the API blocked the shell still loads and navigates', async ({ page }) => {
-  await page.route('**/api/**', (route) => route.abort())
+  await page.route('**/challenge.outsera.tech/**', (route) => route.abort())
 
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
