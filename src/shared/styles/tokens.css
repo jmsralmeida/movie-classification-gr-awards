@@ -28,4 +28,6 @@
   /* Tipografia */
   --font-family-base:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size-header: 1rem;
+  --font-size-title: 1.5rem;
 }
