@@ -33,14 +33,22 @@ precisa de justificativa no `plan.md` (problema, alternativas, custo de bundle).
 Mantenha esta seção atualizada quando os scripts mudarem.
 
 - `npm run dev`: servidor local
+- `npm run build`: `tsc -b` + build de produção
 - `npm run lint`: ESLint
-- `npm run typecheck`: `tsc --noEmit`
-- `npm test`: Vitest
-- `npm run test:coverage`: cobertura
-- `npm run test:e2e`: Playwright (ainda não configurado; criar na primeira feature que precisar)
+- `npm run typecheck`: `tsc -b --noEmit`
+- `npm test`: Vitest (uma execução)
+- `npm run test:watch`: Vitest em modo watch
+- `npm run test:coverage`: cobertura (v8)
+- `npm run test:e2e`: Playwright (config mínima em `playwright.config.ts`; `e2e/` ainda sem testes)
+- `npm run format` / `npm run format:check`: Prettier
 
 Antes de dizer que algo está pronto: `npm run lint && npm run typecheck && npm test`.
-O `test:e2e` roda no CI (Art. VI da constitution).
+O CI (`.github/workflows/ci.yml`) roda format:check, lint, typecheck, test e build em push e PR.
+O `test:e2e` entra no CI quando existir a primeira jornada E2E (Art. VI da constitution).
+
+Testes: `src/test/` tem o servidor MSW (`server.ts`, `handlers.ts`), o `setup.ts` (requisição
+sem handler falha o teste) e `renderWithProviders`. ESLint está fixado na 9.x porque
+`eslint-plugin-react` e `eslint-plugin-jsx-a11y` ainda não suportam a 10 (ver `docs/tooling.md`).
 
 ## Convenções
 

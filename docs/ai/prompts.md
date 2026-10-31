@@ -59,3 +59,25 @@ Gerado automaticamente pelo hook `.claude/hooks/log-prompt.mjs`.
 ### 2026-10-31 20:57 UTC · sessão 30056c5f
 
 > Use a skill /ai-interaction-log registre a fase constitution na linha do tempo e, em decisions.md as decisoes qual tomei: TypeScript fixado em 5.9 (incompativel com typescript-eslint, para agilizar o bootstrap, em teste sem impacto), artigos IX (composicao/renderizacao/seguranca) e X (componentizacao) adicionados or mim, estrateia de testes em piramide com Playwright so para jornadas e OpenAPI salvo em docs/requirements/openapi.json
+
+### 2026-10-31 21:05 UTC · sessão ca3d5e77
+
+> Leia a constitution e o CLAUDE.md. Configure a fundacao do projeto, sem nenhuma feature ainda:
+> 
+> - Dependencias:  react-router, @tanstack/react-query, vitest, @testing-library/react, @testing-library/user-event, @testing-library/jest-dom, jsdom, msw, prettier (e o que mais for necessário, justificando)
+> - TypeScript strict; ESLint com regras para React hooks e sem any;
+> - Scripts: dev, build, lint, typecheck, test, test:coverage, format;
+> - Setup de testes com MSW (servidor em src/test/) e um teste de fumaca;
+> Github Actions rodando lint, typecheck, test e build em push e PR;
+> - remova o boilerplate do Vite. Antes de instalar, me mostre a lista de dependencias e o motivo de cada uma. Rode tudo no final e atualize a sessao de comandos do CLAUDE.md e constitution se necessario.
+> 
+> Me da uma lista do arquivos alterados, configuracoes geradas, pra eu poder agrupar os commits de forma a facilitar a leitura e o code review.
+
+### 2026-10-31 21:14 UTC · sessão ca3d5e77
+
+> Decisoes.
+> 
+> - Pode incluir o setup inicial do playwright, deixe configuracoes mais densas para quando for utilizado
+> - Pode remover o pacote somente usado no boilerplate do vite. 
+> 
+> Pode seguir com a instalacao dos pacotes para a fundacao tecnica do projeto.

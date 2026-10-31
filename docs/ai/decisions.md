@@ -34,3 +34,13 @@ decisão, mais recente no final.
 - Decisão: guardar o OpenAPI da API no repositório, em `docs/requirements/openapi.json`, como referência do contrato.
 - Motivo: ter uma fonte versionada e offline para o cliente tipado, os mappers e as fixtures de teste.
 - Onde: `docs/requirements/openapi.json`, Art. III da constitution
+
+### 2026-10-31 — Playwright incluído na fundação
+- Proposta da IA: deixar o Playwright para a primeira feature com jornada E2E, como diz o CLAUDE.md.
+- Decisão: instalar o Playwright já na fundação, com configuração mínima; as configurações densas (viewports, fixtures, mocks) ficam para quando houver teste E2E.
+- Motivo: ter o `test:e2e` e a pasta `e2e/` prontos, sem antecipar configuração sem uso.
+- Onde: `playwright.config.ts`, `package.json`, `CLAUDE.md` (seção Comandos)
+
+### 2026-10-31 - Fundação num commit único por ser setup inicial
+- App shell com providers criado nela.
+- A spec 001 cobre somente o layout, menu e rota
