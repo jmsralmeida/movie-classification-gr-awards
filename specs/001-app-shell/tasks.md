@@ -108,7 +108,7 @@ description: "Task list for App Shell"
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 - [X] T017 [P] Atualizar `.github/workflows/ci.yml`: após `npm run build`, adicionar `npx playwright install --with-deps chromium` e `npm run test:e2e`; remover `--pass-with-no-tests` do script `test:e2e` em `package.json` (agora há E2E). Atualizar `docs/tooling.md` (seção Playwright) e a nota do `test:e2e` em `CLAUDE.md`. Depende de T010.
-- [ ] T018 [P] Atualizar `README.md` (em português): como configurar `VITE_API_BASE_URL` (`.env.example`), rotas e comandos. Depende de T013.
+- [X] T018 [P] Atualizar `README.md` (em português): como configurar `VITE_API_BASE_URL` (`.env.example`), rotas e comandos. Depende de T013.
 - [ ] T019 Rodar `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e`; corrigir qualquer falha com commit próprio. Conferir manualmente os 4 estados da UI (N/A nesta entrega, ver Art. IV no plan), acessibilidade e 768x1280 (Art. VII).
 - [ ] T020 Revisão: usar o agente `code-reviewer` (diff contra `main`) com foco na constitution e na matriz de testes (sem teste duplicado entre níveis); tratar os achados.
 - [ ] T021 Registro de IA: usar a skill `ai-interaction-log` para resumir as fases specify, clarify, plan, tasks e implement em `docs/ai/README.md`; registrar em `docs/ai/decisions.md` qualquer proposta rejeitada ou corrigida pelo James. Sem segredos.
