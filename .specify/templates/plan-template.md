@@ -40,7 +40,32 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Avalie cada artigo de `.specify/memory/constitution.md`. Todo FAIL exige entrada em
+Complexity Tracking e aprovação do James.
+
+| Artigo | Tema | PASS/FAIL | Evidência / justificativa |
+|--------|------|-----------|---------------------------|
+| I | Estrutura (`features/<name>/{api,model,ui}`, `shared/`) | [PASS/FAIL] | [...] |
+| II | Dados (TanStack Query, filtros/página na URL) | [PASS/FAIL] | [...] |
+| III | Contrato HTTP (cliente tipado, mapper, OpenAPI) | [PASS/FAIL] | [...] |
+| IV | Estados da UI (carregando, vazio, erro, sucesso) | [PASS/FAIL] | [...] |
+| V | Tipagem (strict, sem `any`, tipos em arquivos próprios) | [PASS/FAIL] | [...] |
+| VI | Estratégia de testes (pirâmide sem redundância) | [PASS/FAIL] | [...] |
+| VII | Acessibilidade e layout (768x1280, UI em inglês) | [PASS/FAIL] | [...] |
+| VIII | Uso de IA (specify → plan → tasks, registro em `docs/ai/`) | [PASS/FAIL] | [...] |
+| IX | Composição, renderização e segurança | [PASS/FAIL] | [...] |
+| X | Componentização e reutilização | [PASS/FAIL] | [...] |
+
+Restrições de tecnologia: [PASS/FAIL]. Dependência fora da stack aprovada exige justificativa
+(problema, alternativas, custo de bundle): [lista ou "nenhuma"].
+
+### Matriz de testes (Art. VI)
+
+| Critério de aceite | Nível (unitário / componente / E2E) | Arquivo |
+|--------------------|-------------------------------------|---------|
+| [AC-001] | [nível] | [caminho do teste] |
+
+Cada critério aparece em um único nível. Teste E2E declara no título o risco de integração.
 
 ## Project Structure
 

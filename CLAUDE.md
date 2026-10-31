@@ -18,14 +18,15 @@ Toda feature segue: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan
 `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`.
 
 - Não implemente nada sem `tasks.md` revisado pelo James.
-- No `plan.md`, mantenha o Constitution Check com PASS/FAIL por artigo.
+- No `plan.md`, mantenha o Constitution Check com PASS/FAIL por artigo e a matriz
+  "Critério de aceite → nível de teste → arquivo".
 - Implemente uma tarefa por vez. Uma tarefa = um commit, com teste junto.
 
 ## Stack
 
-Vite, React, TypeScript (strict), React Router, TanStack Query, Vitest,
-Testing Library, MSW, ESLint, Prettier. Qualquer dependência nova precisa de
-justificativa no `plan.md`.
+Vite, React, TypeScript (strict), React Router, TanStack Query, CSS Modules, Vitest,
+Testing Library, MSW, Playwright, ESLint, Prettier. Qualquer dependência fora dessa lista
+precisa de justificativa no `plan.md` (problema, alternativas, custo de bundle).
 
 ## Comandos
 
@@ -36,8 +37,10 @@ Mantenha esta seção atualizada quando os scripts mudarem.
 - `npm run typecheck`: `tsc --noEmit`
 - `npm test`: Vitest
 - `npm run test:coverage`: cobertura
+- `npm run test:e2e`: Playwright (ainda não configurado; criar na primeira feature que precisar)
 
 Antes de dizer que algo está pronto: `npm run lint && npm run typecheck && npm test`.
+O `test:e2e` roda no CI (Art. VI da constitution).
 
 ## Convenções
 

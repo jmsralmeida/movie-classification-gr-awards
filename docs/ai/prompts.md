@@ -1,0 +1,61 @@
+# Log de prompts
+
+Gerado automaticamente pelo hook `.claude/hooks/log-prompt.mjs`.
+
+### 2026-10-31 20:01 UTC · sessão 30056c5f
+
+> listar subagentes e skills desde projeto
+
+### 2026-10-31 20:32 UTC · sessão 30056c5f
+
+> /speckit-constitution Projeto: Outsera - Lista de indicados e vencedores da
+> categoria Pior Filme do Golden Raspberry Awards, SPA React + TypeScript que consome https://challenge.outsera.tech/api/movies e consulta a documentacao disponivel no swagger https://challenge.outsera.tech/swagger-ui/index.html. Requisitos em docs/requirements/challenge.md. Crie uma constitution curta (10 artigos), verificavel versao 1.0.0, com sync impact report no topo:
+> 
+> I. Estrutura: features em src/features/<name>/ com api/, model/, ui/; compartilhado em src/shared/.
+> II. Dados: server state somente via TanStack Query; filtros e pagina da URL (search params); sem cache paralelo nem store global sem justificativa.
+> III. Contrato HTTP: cliente tipado; payload cru passa por mapper em model/ antes da UI; OpenAPI é a referência do contrato em docs/requirements/openapi.json.
+> IV. Estados da UI: toda tela ou painel assincrono trata carregando, vazio, erro e sucesso.
+> V. Tipagem: Typescript strict, sem any; interface para entidades, type para unions, arquivos separados para typagens para evitar poluicao de tipos e arquivos grandes e complexos.
+> VI. Testes: cada funcionalidade tem teste de comportamento (Vitest + Testing Library); API mockada com MSW; lint, typeckeck e testes verdes antes de cada commit.
+> VII. Acessibilidade e layout: HTML semantico, labels, teclado, foco visivel; funciona a partir de 768x1280; textos da UI em ingles conforme os anexos.
+> VIII. Uso de IA; toda feature assa por secify, lan e tasks antes do código; prompts, sessões e decisões registrados em docs/ai/; nenhum codigo gerado entra sem revisao humana. Inclua Definition of Done e governanca de emendas. Garanta que o plan-temlate tenha um Constitution Check com PASS/FAIL por artigo.
+> IX. Composicao, renderizacao e seguranca:
+> - Props atravessam no maximo 2 niveis; alem disso, usar composicao (children/slots) ou um hook da feature. Context so para estado realmente global (ex.: tema), nunca para dados do servidor.
+> - Estado derivado é calculado no render, nao guardado em useState nem sincronizado com useEffect. SEm useEffect para buscar dados (TanStack Query faz isso).
+> - memo/useMemo/useCallback só com motivo registrado (custo medido no Profiler ou referencia estavel para filho memoizado).
+> - Listas usam key estável (id), nunca o indice.
+> - Conteudo da API é renderizado so como texto; dangerouslySetInnerHTML é proibido; nenhum segredo em variaveis VITE_ (sao publicas). Verificacao: ESLint com react-hooks (rules-of-hooks, exhaustive-deps), react/no-danger, react/no-array-index-key e jsx-a11y; o restante, no code review.
+> X. Componentizacao e reutilizacao:
+> - Componentes compartilhados ficam em src/shared/ui/ e sao apresentacionais: recebem dados por props, nao buscam dados e nao conhecem nenhuma feature.
+> - Extrair para shared/ui quando o mesmo padrao aparece em 2 lugares; nao criar abstracao para uso unico
+> - Componentes genericos sao tipados (ex.: DataTable<T> com definicao de colunas), sem props booleanas para cada variacao
+> - Estados assincronos (carregando, vazio, erro) sao tratados por um componente comum de painel nao reimplementados em cada tela.
+> - Estilos com CSS Modules e tokens (cores, espacamentos) em src/shared/styles; sem estilos inline nem valores magicos
+> - Cada componente de share/ui tem teste proprio. Verificacao: code review e Constitution Check do plan
+> 
+> Escrever o constitution, corrigir possiveis erros de portugues
+
+### 2026-10-31 20:47 UTC · sessão 30056c5f
+
+> Ajuste o rascunho da constitution antes de eu ratificar a versao. 
+> 
+> 1) Substitua o Artigo VI por:
+> VI. Estrategia de testes (piramide sem redundancia)
+> - Cada comportamento é testado no nivel mais baixo que consegue prova-lo, e so nele. 
+> - Unitario (Vitest): mappers, utilitarios, regras de dados, hooks.
+> - Componente (Vitest + Testing Library + MSW): estados de carregando/vazio/erro/sucesso, interacao de filtros e paginacao, acessibilidade (papeis e labels)
+> - E2E (Playwright) so jornandas que dependem de navegador real e de varias partes juntas: navegacao pelo menu, URL compartilhave (abrir link com filtros e pagina, voltar do navegador), busca por ano ponta a ponta, layout 768x1280 e 1440x900.
+> - E2E nao repete o que o unitario ou componente ja provam (formatacao, estados de painel, validacoes). Cada teste E2E declara no titulo o risco de integracao que cobre.
+> - E2E usa API mockada com fixtures derivadas do OpenAPI; sem waitForTimeout; localizacao por papel e texto acessivel.
+> - Toto plan.md tem uma matriz "Criterio de aceite -> nivel de teste -> arquivo". e o code review recusa teste duplicado entre niveis.
+> Verificacao: npm test e npm run test:e2e no CI.
+> 
+> 2) Adicione uma sessao "Restricoes de tecnologia" (nao e artigo) com a stack aprovada, sem versoes: React, typescript strict, Vite, React Router, Tanstack Query, CSS Modules, Vitest, Testing Library, MSW, Playwright, EsLint, Prettier. Regra: qualquer deendencia fora dessa lista precisa de justificativa no plan.md (problema, alternativas, custo de bundle). Versoes ficam no package.json, nao na constitution.
+
+### 2026-10-31 20:53 UTC · sessão 30056c5f
+
+> sim, atualize o plan-template e o CLAUDE.md
+
+### 2026-10-31 20:57 UTC · sessão 30056c5f
+
+> Use a skill /ai-interaction-log registre a fase constitution na linha do tempo e, em decisions.md as decisoes qual tomei: TypeScript fixado em 5.9 (incompativel com typescript-eslint, para agilizar o bootstrap, em teste sem impacto), artigos IX (composicao/renderizacao/seguranca) e X (componentizacao) adicionados or mim, estrateia de testes em piramide com Playwright so para jornadas e OpenAPI salvo em docs/requirements/openapi.json

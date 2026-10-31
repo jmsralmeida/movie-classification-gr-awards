@@ -36,3 +36,4 @@ gerado passou pela minha revisão, por lint, typecheck e testes antes do commit.
 
 | Data | Feature | Fase | Comando/skill | Artefato | O que revisei ou mudei |
 | --- | --- | --- | --- | --- | --- |
+| 2026-10-31 | projeto | constitution | `/speckit-constitution` | `.specify/memory/constitution.md` (v1.0.0), `plan-template.md`, `CLAUDE.md` | Adicionei os artigos IX e X, troquei o VI pela estratégia de pirâmide com Playwright, incluí a seção de restrições de tecnologia e pedi o Constitution Check com PASS/FAIL no plan-template |
