@@ -43,7 +43,7 @@ Nenhum item `NEEDS CLARIFICATION` pendente (ver `research.md`).
 
 | Artigo | Tema | PASS/FAIL | Evidência / justificativa |
 |--------|------|-----------|---------------------------|
-| I | Estrutura (`features/<name>/{api,model,ui}`, `shared/`) | PASS | Views em `src/features/dashboard/ui` e `src/features/list/ui` (sem `api/`/`model/` vazios: nascem com as features). Cliente, QueryClient, UI e tokens em `src/shared/`. `src/app/` só compõe. Nenhuma feature importa outra. |
+| I | Estrutura (`features/<name>/{api,model,ui}`, `shared/`) | FAIL (desvio aprovado pelo James em 2026-10-31, ver Complexity Tracking) | Views em `src/features/dashboard/ui` e `src/features/list/ui`, sem `api/` e `model/` (nascem com as chamadas de API das próximas features). Cliente, QueryClient, UI e tokens em `src/shared/`. `src/app/` só compõe. Nenhuma feature importa outra. |
 | II | Dados (TanStack Query, filtros/página na URL) | PASS | Um `QueryClient` único em `src/shared/api/queryClient.ts`; sem store, sem cache paralelo. Filtros e página: fora do escopo (próximas features). |
 | III | Contrato HTTP (cliente tipado, mapper, OpenAPI) | PASS | Cliente com entrada tipada e saída `unknown`; mapper fica em cada feature (spec, clarificação 2). Divergências API real × OpenAPI registradas em `research.md` (item R6). |
 | IV | Estados da UI (carregando, vazio, erro, sucesso) | PASS | Não há painel assíncrono nesta entrega. As views vazias são estáticas; página "não encontrado" é o estado de erro de rota, com ação de saída. Os 4 estados entram com o painel comum das features seguintes. |
@@ -62,7 +62,7 @@ Restrições de tecnologia: PASS. Dependências fora da stack aprovada: nenhuma.
 |--------------------|-------------------------------------|---------|
 | US1-1 / FR-005: raiz mostra Dashboard (redirect `/` → `/dashboard`) | Componente | `src/app/App.test.tsx` |
 | US1-2 / FR-003 / FR-006: clicar "List" troca o conteúdo e mostra o `<h1>` da view | Componente | `src/app/App.test.tsx` |
-| FR-001 / FR-002: cabeçalho "Outsera Razzies" e links "Dashboard", "List" nesta ordem | Componente | `src/shared/ui/AppShell/AppShell.test.tsx` e `src/shared/ui/NavMenu/NavMenu.test.tsx` |
+| FR-001 / FR-002: cabeçalho "Outsera Razzies" e links "Dashboard", "List" nesta ordem, no app real | Componente | `src/app/App.test.tsx` (o `AppShell.test.tsx` e o `NavMenu.test.tsx` provam só o comportamento genérico) |
 | US1-5 / FR-004: link atual com `aria-current="page"` (e nenhum em rota desconhecida, US3-3) | Componente | `src/shared/ui/NavMenu/NavMenu.test.tsx` |
 | FR-009: regiões semânticas (`banner`, `navigation`, `main`) | Componente | `src/shared/ui/AppShell/AppShell.test.tsx` |
 | US3-1 / US3-2 / FR-007: URL inexistente mostra "não encontrado" no shell, com link para o Dashboard | Componente | `src/app/App.test.tsx` |
@@ -70,6 +70,8 @@ Restrições de tecnologia: PASS. Dependências fora da stack aprovada: nenhuma.
 | US1-3 / US1-5 / SC-004: voltar do navegador e URL aberta direto, em navegador real | E2E | `e2e/shell-navigation.spec.ts` |
 | US1-4 / FR-009 / SC-003: Tab/Enter percorrem o menu e o foco é visível (CSS real) | E2E | `e2e/shell-navigation.spec.ts` |
 | US2 / FR-008 / SC-002: sem rolagem horizontal e shell completo em 768x1280 e 1440x900 | E2E | `e2e/shell-navigation.spec.ts` |
+| US2-3: com conteúdo alto, cabeçalho fixo no topo, menu visível e só o conteúdo rola | E2E | `e2e/shell-navigation.spec.ts` |
+| US3-3: nenhum link atual em rota desconhecida, inclusive subcaminho (`/list/xyz`) | Componente | `src/shared/ui/NavMenu/NavMenu.test.tsx` |
 | SC-007: shell navegável com a API bloqueada (nenhuma dependência de rede) | E2E | `e2e/shell-navigation.spec.ts` |
 | US4-1 / US4-2 / FR-011: URL padrão, valor do ambiente, barras normalizadas | Unitário | `src/shared/api/config.test.ts` e `src/shared/api/httpClient.test.ts` |
 | US4-3 / FR-010: sucesso devolve o corpo JSON como `unknown`; parâmetros de consulta montados (`undefined` omitido) | Unitário (MSW) | `src/shared/api/httpClient.test.ts` |
@@ -143,9 +145,8 @@ título, o menu e o conteúdo por `children`/props, sem conhecer feature nem rot
 
 ### Impactos em arquivos existentes
 
-- `src/test/smoke.test.tsx`: o teste "renders the app shell" procura `heading "Outsera Razzies"`,
-  mas o título do cabeçalho não é um `<h1>` (cada view tem o seu `<h1>`). O teste passa a esperar
-  `banner` com "Outsera Razzies"; ou é removido, se `App.test.tsx` já cobrir o mesmo (sem teste duplicado, Art. VI).
+- `src/test/smoke.test.tsx`: o teste "renders the app shell" é removido (o título do cabeçalho não é um
+  `<h1>`; `App.test.tsx` passa a afirmar o `banner` "Outsera Razzies"). Os outros dois testes (MSW) ficam.
 - `src/test/render.tsx`: mantém QueryClient próprio por teste (sem retry); nenhuma mudança necessária.
 - `index.html`: `<title>` passa a "Outsera Razzies".
 - `README.md` e `CLAUDE.md`: documentar `VITE_API_BASE_URL` e atualizar a nota sobre `test:e2e`.
@@ -160,4 +161,6 @@ título, o menu e o conteúdo por `children`/props, sem conhecer feature nem rot
 
 ## Complexity Tracking
 
-Sem violações; nenhuma entrada necessária.
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| Art. I: `features/dashboard` e `features/list` só com `ui/` (sem `api/` e `model/`) | Esta entrega não faz chamadas de API; não há cliente por endpoint nem payload para mapear. Aprovado pelo James em 2026-10-31. | Pastas vazias com `.gitkeep` seriam arquivos sem função; `api/` e `model/` são criadas pelas features do Dashboard e da Lista, quando houver código. |

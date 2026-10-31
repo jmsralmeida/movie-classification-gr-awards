@@ -44,3 +44,14 @@ decisão, mais recente no final.
 ### 2026-10-31 - Fundação num commit único por ser setup inicial
 - App shell com providers criado nela.
 - A spec 001 cobre somente o layout, menu e rota
+### 2026-10-31 — Ajustes após o /speckit-analyze da spec 001
+- Proposta da IA: plan com Art. I marcado PASS (features só com `ui/`); smoke test mantido "ou removido"; `NavLink` sem `end`; tarefa T010 de espaçamento solta; rolagem do layout sem definição.
+- Decisão: aprovar o desvio do Art. I (sem chamadas de API nesta entrega, registrado em Complexity Tracking); remover o teste do shell do smoke test e afirmar título e links na ordem em `App.test.tsx`; `end` no `NavLink` com teste de `/list/xyz`; espaçamento dentro de T008 (T010 removida); cabeçalho fixo no topo e menu visível, só o conteúdo rola.
+- Motivo: evitar pastas vazias, fechar lacunas de cobertura (FR-001, FR-002) e tornar o cenário de rolagem verificável.
+- Onde: `specs/001-app-shell/spec.md`, `plan.md`, `research.md`, `tasks.md`
+
+### 2026-10-31 — Título do cabeçalho no clarify da spec 001
+- Proposta da IA: "Frontend React Test" (anexo 1 trocando Angular por React).
+- Decisão: usar "Outsera Razzies", o nome do projeto.
+- Motivo: o texto do anexo é só referência visual; o nome do projeto é mais adequado.
+- Onde: `specs/001-app-shell/spec.md` (Clarifications, FR-001)

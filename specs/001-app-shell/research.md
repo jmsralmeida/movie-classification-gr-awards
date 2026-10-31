@@ -8,7 +8,7 @@ Sem `NEEDS CLARIFICATION` aberto. Decisões técnicas e a verificação do contr
 - **Alternativas**: roteador de dados (`createBrowserRouter`): sem necessidade (sem loaders); manter `BrowserRouter` já existente.
 
 ## R2. Layout
-- **Decisão**: CSS Grid (linhas: cabeçalho + resto; colunas: menu de largura fixa + conteúdo), CSS Modules e tokens em `src/shared/styles/tokens.css`. Sem menu hambúrguer: 768 px comporta o menu fixo.
+- **Decisão**: CSS Grid (linhas: cabeçalho + resto; colunas: menu de largura fixa + conteúdo), CSS Modules e tokens em `src/shared/styles/tokens.css`. Sem menu hambúrguer: 768 px comporta o menu fixo. Cabeçalho fixo no topo (`position: sticky`) e menu lateral `sticky` logo abaixo; só o conteúdo rola.
 - **Racional**: reproduz o anexo 1; menos estado e menos código.
 - **Alternativas**: menu recolhível abaixo de 1024 px: fora do escopo da spec.
 

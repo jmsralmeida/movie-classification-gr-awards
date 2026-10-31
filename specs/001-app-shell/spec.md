@@ -14,6 +14,7 @@
 
 - Q: Qual texto o cabeçalho deve mostrar como título do app? → A: "Outsera Razzies" (nome do projeto)
 - Q: Quando a API devolve um corpo com formato diferente do esperado, o cliente só confere JSON válido ou confere os campos de cada endpoint? → A: O cliente só garante JSON válido; a conferência dos campos fica no mapper de cada feature
+- Q: Cabeçalho e menu ficam fixos quando o conteúdo é mais alto que a janela? → A: Sim, o cabeçalho fica fixo no topo e o menu lateral permanece visível abaixo dele; só a área de conteúdo rola (análise de 2026-10-31)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -65,7 +66,7 @@ conteúdo aparecem completos, sem sobreposição e sem rolagem horizontal.
 2. **Given** viewport de 1440x900, **When** o app é exibido, **Then** o menu mantém largura
    estreita e a área de conteúdo ocupa o espaço restante.
 3. **Given** conteúdo mais alto que a janela, **When** o usuário rola, **Then** o cabeçalho
-   e o menu continuam acessíveis e a rolagem acontece na área de conteúdo/página sem quebrar o layout.
+   permanece fixo no topo, o menu lateral continua visível e só o conteúdo se move, sem quebrar o layout.
 
 ---
 
