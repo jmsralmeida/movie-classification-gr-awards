@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// Configuração mínima. Viewports (768x1280 e 1440x900), fixtures e mocks da API
-// entram na primeira feature que tiver jornada E2E (Art. VI).
+// Dois viewports de referência (Art. VII): desktop 1440x900 e tablet 768x1280.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -12,7 +11,16 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'desktop-1440',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: 'tablet-768',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1280 } },
+    },
+  ],
   webServer: {
     command: 'npm run dev -- --port 5173 --strictPort',
     url: 'http://localhost:5173',
