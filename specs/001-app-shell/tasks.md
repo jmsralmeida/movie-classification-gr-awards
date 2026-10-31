@@ -84,7 +84,7 @@ description: "Task list for App Shell"
 
 **Independent Test**: abrir `/qualquer-coisa` e ver "Page not found" com o shell e o link "Go to Dashboard".
 
-- [ ] T012 [US3] Criar `src/app/NotFoundPage.tsx` (`<h1>Page not found</h1>`, um parágrafo curto em inglês e `<Link to={paths.dashboard}>Go to Dashboard</Link>`), adicionar `<Route path="*" element={<NotFoundPage />} />` em `src/app/App.tsx` e estender `src/app/App.test.tsx` (componente): URL inexistente mostra o `h1` e o shell (`banner`, `navigation`); clicar em "Go to Dashboard" mostra o `h1` "Dashboard". (O "nenhum `aria-current`" já é provado em T004; não repetir.)
+- [X] T012 [US3] Criar `src/app/NotFoundPage.tsx` (`<h1>Page not found</h1>`, um parágrafo curto em inglês e `<Link to={paths.dashboard}>Go to Dashboard</Link>`), adicionar `<Route path="*" element={<NotFoundPage />} />` em `src/app/App.tsx` e estender `src/app/App.test.tsx` (componente): URL inexistente mostra o `h1` e o shell (`banner`, `navigation`); clicar em "Go to Dashboard" mostra o `h1` "Dashboard". (O "nenhum `aria-current`" já é provado em T004; não repetir.)
 
 **Checkpoint**: US1 a US3 completas
 

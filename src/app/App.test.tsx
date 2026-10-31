@@ -39,4 +39,21 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
   })
+
+  it('shows "Page not found" inside the shell for an unknown URL', () => {
+    renderWithProviders(<App />, { route: '/nowhere' })
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument()
+    expect(screen.getByRole('banner')).toBeInTheDocument()
+    expect(screen.getByRole('navigation')).toBeInTheDocument()
+  })
+
+  it('goes back to the Dashboard from the not found page', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<App />, { route: '/nowhere' })
+
+    await user.click(screen.getByRole('link', { name: 'Go to Dashboard' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument()
+  })
 })

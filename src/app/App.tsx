@@ -4,6 +4,7 @@ import { ListPage } from '../features/list/ui/ListPage'
 import { AppShell } from '../shared/ui/AppShell/AppShell'
 import { NavMenu } from '../shared/ui/NavMenu/NavMenu'
 import { navItems, paths } from './navigation'
+import { NotFoundPage } from './NotFoundPage'
 
 export function App() {
   return (
@@ -12,6 +13,7 @@ export function App() {
         <Route path="/" element={<Navigate to={paths.dashboard} replace />} />
         <Route path={paths.dashboard} element={<DashboardPage />} />
         <Route path={paths.list} element={<ListPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppShell>
   )
