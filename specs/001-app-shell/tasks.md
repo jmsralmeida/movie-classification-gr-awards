@@ -42,7 +42,7 @@ description: "Task list for App Shell"
 **⚠️ CRITICAL**: US1 e US3 dependem de T002
 
 - [X] T002 Criar `src/app/navigation.ts` exportando `paths` (`dashboard: '/dashboard'`, `list: '/list'`) e `navItems: NavItem[]` na ordem `Dashboard`, `List` (labels exatamente "Dashboard" e "List"); `NavItem` é `interface { to: string; label: string }` em `src/shared/ui/NavMenu/NavMenu.types.ts` (criar o arquivo aqui). Sem teste próprio (coberto por `App.test.tsx` em T007).
-- [ ] T003 [P] Alterar o `<title>` de `index.html` para "Outsera Razzies".
+- [X] T003 [P] Alterar o `<title>` de `index.html` para "Outsera Razzies".
 
 **Checkpoint**: base pronta para as user stories
 
