@@ -31,7 +31,7 @@ description: "Task list for App Shell"
 
 **Purpose**: base visual compartilhada, necessária antes de qualquer estilo
 
-- [ ] T001 Criar `src/shared/styles/tokens.css` (custom properties: cor do cabeçalho escuro, fundo claro do menu, fundo cinza da área de conteúdo, cor do link atual, cor do texto, cor/offset do foco, largura do menu, altura do cabeçalho, espaçamentos; valores estimados do anexo 1) e `src/shared/styles/global.css` (reset mínimo, `box-sizing`, fonte do sistema, `:focus-visible` com contorno visível, `body` sem margem), e importar os dois em `src/main.tsx`. Sem teste (só CSS); verificar com `npm run dev` e `npm run build`.
+- [X] T001 Criar `src/shared/styles/tokens.css` (custom properties: cor do cabeçalho escuro, fundo claro do menu, fundo cinza da área de conteúdo, cor do link atual, cor do texto, cor/offset do foco, largura do menu, altura do cabeçalho, espaçamentos; valores estimados do anexo 1) e `src/shared/styles/global.css` (reset mínimo, `box-sizing`, fonte do sistema, `:focus-visible` com contorno visível, `body` sem margem), e importar os dois em `src/main.tsx`. Sem teste (só CSS); verificar com `npm run dev` e `npm run build`.
 
 ---
 
