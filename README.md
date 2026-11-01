@@ -28,12 +28,12 @@ estiver definida, o app usa o valor padrão acima.
 
 ## Rotas
 
-| Rota           | Tela                                        |
-| -------------- | ------------------------------------------- |
-| `/`            | Redireciona para `/dashboard`               |
-| `/dashboard`   | Dashboard (`?year=YYYY` opcional)           |
-| `/list`        | Lista de filmes (placeholder nesta entrega) |
-| qualquer outra | Página "não encontrada"                     |
+| Rota           | Tela                                               |
+| -------------- | -------------------------------------------------- |
+| `/`            | Redireciona para `/dashboard`                      |
+| `/dashboard`   | Dashboard (`?year=YYYY` opcional)                  |
+| `/list`        | Lista de filmes (`?page=&year=&winner=` opcionais) |
+| qualquer outra | Página "não encontrada"                            |
 
 ## Dashboard
 
@@ -54,7 +54,29 @@ como "sem busca". Diferenças entre a API real e o OpenAPI estão em
 [`docs/api-divergences.md`](docs/api-divergences.md).
 
 Para rodar: `npm run dev` (app), `npm test` (unitário e componente, com MSW) e `npm run test:e2e`
-(3 jornadas do Dashboard em 1440x900 e 768x1280, com a API mockada).
+(jornadas do Dashboard e da Lista em 1440x900 e 768x1280, com a API mockada).
+
+## Lista de filmes
+
+A rota `/list` mostra a tabela de filmes (ID, Year, Title, Winner?), 15 por página, com
+paginação e filtros por ano e por vencedor no cabeçalho das colunas. Paginação e filtros são da
+API: o app envia `page` (base 0), `size=15` (`PAGE_SIZE`) e só os filtros presentes, e não filtra
+nem reordena nada no cliente. A tabela trata carregando, vazio ("No movies found."), erro (com
+"Try again", que repete a mesma consulta) e sucesso, e os filtros ficam visíveis em todos os
+estados. Ao trocar de página, a lista anterior fica esmaecida até a resposta chegar.
+
+| Parâmetro | Valores                           | O que faz                                                     |
+| --------- | --------------------------------- | ------------------------------------------------------------- |
+| `page`    | inteiro de 1 a 1.000.000 (base 1) | Página atual; ausente = página 1                              |
+| `year`    | 4 dígitos (ex.: `1981`)           | Filtra por ano; o filtro roda ao completar o 4º dígito        |
+| `winner`  | `true` ou `false`                 | Só vencedores ou só quem não venceu; ausente = Yes/No (todos) |
+
+Mudar qualquer filtro volta à página 1 (a URL fica sem `page`). Parâmetro inválido é ignorado,
+então a API nunca recebe valor inválido. Recarregar a página e usar voltar/avançar do navegador
+restauram controles e tabela. Diferenças entre a API real e o OpenAPI estão em
+[`docs/api-divergences.md`](docs/api-divergences.md).
+
+Para rodar: `npm run dev` (app), `npm test` (unitário e componente, com MSW) e `npm run test:e2e`.
 
 ## Comandos
 
