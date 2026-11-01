@@ -487,4 +487,66 @@ describe('ListPage', () => {
       expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
     })
   })
+
+  describe('error state', () => {
+    const failRequests = () =>
+      server.use(
+        http.get(apiBaseUrl, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+      )
+
+    it('shows the error with "Try again", the title and the filters, without pagination or technical details', async () => {
+      failRequests()
+      renderList()
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Could not load this data.')
+      expect(screen.getByRole('alert')).not.toHaveTextContent(/500|boom/)
+      expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it('repeats the same query (same page and filters) on "Try again"', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList('/list?page=2&winner=false')
+      await screen.findByRole('alert')
+      const requests = recordRequests()
+
+      await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+      await waitForRows(range(18, 30).concat([32, 33]))
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.get('page')).toBe('1')
+      expect(requests[0]?.get('winner')).toBe('false')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('leaves the error by changing a filter or the page, without "Try again"', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList()
+      await screen.findByRole('alert')
+      server.use(...listHandlers)
+
+      await user.selectOptions(screen.getByRole('combobox', { name: 'Filter by winner' }), 'Yes')
+
+      await waitForRows([1, 11, 31])
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
+
+    it('moves the focus to "Try again" when the next page fails after "Next page" was used', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      screen.getByRole('button', { name: 'Next page' }).focus()
+      failRequests()
+
+      await user.keyboard('{Enter}')
+
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      await waitFor(() => expect(retry).toHaveFocus())
+    })
+  })
 })

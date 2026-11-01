@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Pagination } from '../../../shared/ui/Pagination/Pagination'
 import { getPanelStatus } from '../../../shared/ui/Panel/panelStatus'
 import { StatusMessage } from '../../../shared/ui/StatusMessage/StatusMessage'
@@ -32,7 +33,13 @@ export function ListPage() {
   const movies = useMovies(query)
   const { data } = movies
   const status = getPanelStatus(movies, data?.movies.length === 0)
+  const retryRef = useRef<HTMLButtonElement>(null)
   const frameClassName = movies.isPlaceholderData ? `${styles.frame} ${styles.busy}` : styles.frame
+
+  // Se a falha desmontou o botão focado (ex.: "Next page"), o foco foi ao body: leva-o ao "Try again".
+  useEffect(() => {
+    if (status === 'error' && document.activeElement === document.body) retryRef.current?.focus()
+  }, [status])
 
   return (
     <>
@@ -51,6 +58,7 @@ export function ListPage() {
                   status={status}
                   emptyMessage="No movies found."
                   onRetry={() => void movies.refetch()}
+                  retryRef={retryRef}
                 />
               )
             }
