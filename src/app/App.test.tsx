@@ -2,13 +2,14 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { dashboardHandlers } from '../features/dashboard/testing/handlers'
+import { listHandlers } from '../features/list/testing/handlers'
 import { renderWithProviders } from '../test/render'
 import { server } from '../test/server'
 import { App } from './App'
 
 describe('App', () => {
   beforeEach(() => {
-    server.use(...dashboardHandlers)
+    server.use(...dashboardHandlers, ...listHandlers)
   })
 
   it('shows the app title in the banner', () => {
@@ -36,13 +37,13 @@ describe('App', () => {
 
     await user.click(screen.getByRole('link', { name: 'List' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
   })
 
   it.each(['/List', '/list/'])('opens the List view at %s', (route) => {
     renderWithProviders(<App />, { route })
 
-    expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
   })
 
   it('shows "Page not found" inside the shell for an unknown URL', () => {

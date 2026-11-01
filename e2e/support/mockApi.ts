@@ -6,6 +6,7 @@ import {
   winnersByYear2018Response,
   yearsResponse,
 } from '../../src/features/dashboard/testing/fixtures.ts'
+import { respondToMoviesQuery } from '../../src/features/list/testing/fixtures.ts'
 
 const winnersByYear1990Response = [
   {
@@ -42,5 +43,13 @@ export async function mockDashboardApi(page: Page): Promise<void> {
       default:
         return route.fulfill({ status: 404, json: {} })
     }
+  })
+}
+
+// Responde a consulta paginada da Lista com as mesmas fixtures dos testes de componente.
+export async function mockListApi(page: Page): Promise<void> {
+  await page.route(/\/api\/movies(\?.*)?$/, async (route) => {
+    const { status, body } = respondToMoviesQuery(new URL(route.request().url()).searchParams)
+    return route.fulfill({ status, json: body })
   })
 }
