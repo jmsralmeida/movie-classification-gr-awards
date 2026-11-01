@@ -127,3 +127,55 @@ test('real CSS layout: filters in the header, full pagination and no horizontal 
     expect(cellBox!.x + cellBox!.width).toBeLessThanOrEqual(tableBox!.x + tableBox!.width)
   }
 })
+
+test('real CSS: year field, winner select and pagination buttons show a focus ring when reached with Tab', async ({
+  page,
+}) => {
+  await mockListApi(page)
+  await page.goto('/list')
+  const year = page.getByRole('textbox', { name: 'Filter by year' })
+  const winner = page.getByRole('combobox', { name: 'Filter by winner' })
+  const pagination = page.getByRole('navigation', { name: 'Pagination' })
+  await expect(page.getByRole('row')).toHaveCount(16)
+
+  await year.focus()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  await expect(year).toBeFocused()
+  await expect(year).not.toHaveCSS('outline-style', 'none')
+
+  await page.keyboard.press('Tab')
+  await expect(winner).toBeFocused()
+  await expect(winner).not.toHaveCSS('outline-style', 'none')
+
+  // First page e Previous page ficam sem destino na página 1, mas continuam focáveis.
+  for (const name of ['First page', 'Previous page', 'Page 1', 'Page 2']) {
+    await page.keyboard.press('Tab')
+    const button = pagination.getByRole('button', { name })
+    await expect(button).toBeFocused()
+    await expect(button).not.toHaveCSS('outline-style', 'none')
+  }
+})
+
+test('real CSS: "Try again" is reachable with Tab, shows a focus ring and recovers the list on Enter', async ({
+  page,
+}) => {
+  let fail = true
+  await page.route(/\/api\/movies(\?.*)?$/, async (route) => {
+    if (fail) return route.fulfill({ status: 500, json: { message: 'boom' } })
+    const { status, body } = respondToMoviesQuery(new URL(route.request().url()).searchParams)
+    return route.fulfill({ status, json: body })
+  })
+  await page.goto('/list')
+  const retry = page.getByRole('button', { name: 'Try again' })
+  await expect(retry).toBeVisible()
+
+  await page.getByRole('combobox', { name: 'Filter by winner' }).focus()
+  await page.keyboard.press('Tab')
+  await expect(retry).toBeFocused()
+  await expect(retry).not.toHaveCSS('outline-style', 'none')
+
+  fail = false
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('row')).toHaveCount(16)
+})
