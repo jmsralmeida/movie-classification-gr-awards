@@ -379,4 +379,15 @@ describe('ListPage', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
+
+  describe('restoring from the URL', () => {
+    it('fills the controls and the table from page, year and winner', async () => {
+      renderList('/list?page=2&year=1981&winner=false')
+
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('1981')
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('false')
+      await waitForRows([27, 28, 29, 30])
+      expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page')
+    })
+  })
 })

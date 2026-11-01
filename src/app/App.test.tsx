@@ -40,6 +40,21 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
   })
 
+  it('opens the first page without filters when the List link is used from a filtered list', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<App />, { route: '/list?page=2&winner=true' })
+    expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('true')
+
+    await user.click(screen.getByRole('link', { name: 'List' }))
+
+    expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('')
+    expect(await screen.findByRole('button', { name: 'Page 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
   it.each(['/List', '/list/'])('opens the List view at %s', (route) => {
     renderWithProviders(<App />, { route })
 
