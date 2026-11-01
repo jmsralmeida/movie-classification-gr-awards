@@ -513,6 +513,37 @@ describe('ListPage', () => {
       expect(firstCellsOf(bodyRows())).toEqual(range(31, 40))
       expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
     })
+
+    it('does not let a slow response of an old filter overwrite the current filters', async () => {
+      const user = userEvent.setup()
+      let releaseYearOnly: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        releaseYearOnly = resolve
+      })
+      let yearOnlyServed = false
+      server.use(
+        http.get(apiBaseUrl, async ({ request }) => {
+          const params = new URL(request.url).searchParams
+          if (params.get('year') === '1980' && !params.has('winner')) {
+            await gate
+            yearOnlyServed = true
+          }
+          const { status, body } = respondToMoviesQuery(params)
+          return HttpResponse.json(body as JsonBodyType, { status })
+        }),
+      )
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(screen.getByRole('textbox', { name: 'Filter by year' }), '1980')
+      await user.selectOptions(screen.getByRole('combobox', { name: 'Filter by winner' }), 'Yes')
+      await waitForRows([1])
+
+      releaseYearOnly()
+      await waitFor(() => expect(yearOnlyServed).toBe(true))
+      expect(firstCellsOf(bodyRows())).toEqual([1])
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('true')
+    })
   })
 
   describe('error state', () => {
