@@ -25,9 +25,10 @@
   text-align: center;
 }
 
-/* ID e Winner? não quebram dígitos nem palavras; Year e Title absorvem o aperto. */
-.frame td:first-child,
-.frame td:last-child {
+/* ID e Winner? não quebram dígitos nem palavras; Year e Title absorvem o aperto.
+   A linha de status (td com colSpan) fica de fora, para a mensagem poder quebrar. */
+.frame td:first-child:not([colspan]),
+.frame td:last-child:not([colspan]) {
   white-space: nowrap;
 }
 
