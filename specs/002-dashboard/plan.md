@@ -61,6 +61,8 @@ recusado: zod/valibot para validar respostas (ver `research.md` R3) e biblioteca
 
 ### Divergências API real × OpenAPI (Art. III)
 
+Detalhe completo e evidências em [`docs/api-divergences.md`](../../docs/api-divergences.md); abaixo, o resumo que vale para esta feature.
+
 Verificadas em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
 
 - `winnersByYear` devolve **lista** de filmes (igual ao OpenAPI); o PDF mostrava um objeto. Vale o OpenAPI.
