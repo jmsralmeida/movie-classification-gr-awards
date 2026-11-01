@@ -73,7 +73,7 @@ export function WinnersSearchForm({ year }: WinnersSearchFormProps) {
         </button>
       </div>
       {hasError && (
-        <p id={errorId} className={styles.error}>
+        <p id={errorId} className={styles.error} role="alert">
           {INVALID_YEAR_MESSAGE}
         </p>
       )}

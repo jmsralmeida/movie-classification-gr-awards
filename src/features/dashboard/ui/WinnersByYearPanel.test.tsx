@@ -157,6 +157,7 @@ describe('WinnersByYearPanel', () => {
         expect(field).toHaveAttribute('aria-invalid', 'true')
         expect(field).toHaveAccessibleDescription('Enter a 4-digit year.')
         expect(message).toBeInTheDocument()
+        expect(screen.getByRole('alert')).toHaveTextContent('Enter a 4-digit year.')
         expect(requestedYears).toEqual([])
       },
     )
