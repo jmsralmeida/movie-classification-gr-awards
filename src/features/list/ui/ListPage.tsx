@@ -4,12 +4,18 @@ import type { Column } from '../../../shared/ui/DataTable/DataTable.types'
 import { useMovies } from '../api/useMovies'
 import type { Movie } from '../model/movies.types'
 import { WinnerFilter } from './WinnerFilter'
+import { YearFilter } from './YearFilter'
 import styles from './ListPage.module.css'
 import { useListParams } from './useListParams'
 
 const columns: Column<Movie>[] = [
   { id: 'id', header: 'ID', render: (movie) => movie.id },
-  { id: 'year', header: 'Year', render: (movie) => movie.year },
+  {
+    id: 'year',
+    header: 'Year',
+    render: (movie) => movie.year,
+    headerControl: <YearFilter />,
+  },
   { id: 'title', header: 'Title', render: (movie) => movie.title },
   {
     id: 'winner',

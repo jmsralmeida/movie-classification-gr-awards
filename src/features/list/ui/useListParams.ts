@@ -5,6 +5,7 @@ import { parseMoviesQuery, toSearchParams } from '../model/moviesQuery'
 interface ListParams {
   query: MoviesQuery
   setPage: (page: number) => void
+  setYear: (year: string | undefined) => void
   setWinner: (winner: boolean | undefined) => void
 }
 
@@ -16,7 +17,8 @@ export function useListParams(): ListParams {
   return {
     query,
     setPage: (page) => setSearchParams(toSearchParams({ ...query, page })),
-    // Mudar o filtro volta à página 1.
+    // Mudar um filtro volta à página 1.
+    setYear: (year) => setSearchParams(toSearchParams({ ...query, page: 1, year })),
     setWinner: (winner) => setSearchParams(toSearchParams({ ...query, page: 1, winner })),
   }
 }

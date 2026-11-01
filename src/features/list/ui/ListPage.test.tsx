@@ -248,4 +248,135 @@ describe('ListPage', () => {
       expect(requests.at(-1)?.has('winner')).toBe(false)
     })
   })
+
+  describe('year filter', () => {
+    const yearInput = () => screen.getByRole('textbox', { name: 'Filter by year' })
+    const winnerSelect = () => screen.getByRole('combobox', { name: 'Filter by winner' })
+    const rowYears = () => bodyRows().map((row) => within(row).getAllByRole('cell')[1]?.textContent)
+    const rowWinners = () =>
+      bodyRows().map((row) => within(row).getAllByRole('cell')[3]?.textContent)
+
+    it('shows only the movies of a 4-digit year, with page 1 and no submit button', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?page=2')
+      await waitForRows(range(16, 30))
+
+      await user.type(yearInput(), '1980')
+
+      await waitForRows(range(1, 10))
+      expect(rowYears()).toEqual(Array(10).fill('1980'))
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(requests.at(-1)?.get('page')).toBe('0')
+      expect(screen.queryByRole('button', { name: /search|apply|filter/i })).not.toBeInTheDocument()
+    })
+
+    it('combines the year with the winner filter', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1980')
+      await waitForRows(range(1, 10))
+      await user.selectOptions(winnerSelect(), 'Yes')
+
+      await waitForRows([1])
+      expect(rowYears()).toEqual(['1980'])
+      expect(rowWinners()).toEqual(['Yes'])
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(requests.at(-1)?.get('winner')).toBe('true')
+    })
+
+    it('paginates the filtered total', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1981')
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(rowWinners()).toEqual(Array(15).fill('No')))
+      await waitFor(() => expect(rowYears()).toEqual(Array(15).fill('1981')))
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 2' })).toBeInTheDocument()
+      expect(within(pagination).queryByRole('button', { name: 'Page 3' })).not.toBeInTheDocument()
+    })
+
+    it('removes the year from the next request when the field is emptied', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?year=1980')
+      await waitForRows(range(1, 10))
+      expect(yearInput()).toHaveValue('1980')
+
+      await user.clear(yearInput())
+
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.has('year')).toBe(false)
+    })
+
+    it('does not query nor warn while the year has 1 to 3 digits, keeping the previous list', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+      const before = requests.length
+
+      await user.type(yearInput(), '19')
+
+      expect(requests).toHaveLength(before)
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(yearInput()).not.toHaveAttribute('aria-invalid')
+      expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
+    })
+
+    it.each([
+      ['abc', 'type'],
+      ['19999', 'paste'],
+    ])('shows an error linked to the field for %j and does not query it', async (value, how) => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+      const before = requests.length
+
+      if (how === 'type') {
+        await user.type(yearInput(), value)
+      } else {
+        await user.click(yearInput())
+        await user.paste(value)
+      }
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveTextContent('Enter a 4-digit year.')
+      expect(yearInput()).toHaveAttribute('aria-invalid', 'true')
+      expect(yearInput()).toHaveAccessibleDescription('Enter a 4-digit year.')
+      expect(requests).toHaveLength(before)
+    })
+
+    it('keeps the focus in the field when the 4th digit triggers the query', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1980')
+
+      await waitForRows(range(1, 10))
+      expect(yearInput()).toHaveFocus()
+    })
+
+    it('accepts a year surrounded by spaces', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), ' 1980 ')
+
+      await waitForRows(range(1, 10))
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
 })
