@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { apiBaseUrl } from '../../../shared/api/config'
 import { renderWithProviders } from '../../../test/render'
 import { server } from '../../../test/server'
+import { moviesKeys } from '../api/moviesKeys'
 import { respondToMoviesQuery } from '../testing/fixtures'
 import { listHandlers } from '../testing/handlers'
 import { ListPage } from './ListPage'
@@ -478,7 +479,7 @@ describe('ListPage', () => {
           return HttpResponse.json(body as JsonBodyType, { status })
         }),
       )
-      renderList()
+      const { queryClient } = renderList()
       await waitForRows(range(1, 15))
 
       await user.click(screen.getByRole('button', { name: 'Page 2' }))
@@ -487,8 +488,12 @@ describe('ListPage', () => {
 
       releasePage2()
       await waitFor(() => expect(page2Served).toBe(true))
-      // Deixa a resposta atrasada chegar ao cliente antes de conferir a tabela.
-      await new Promise((resolve) => setTimeout(resolve, 0))
+      // A troca para a página 3 cancelou a consulta da página 2: ela fica ociosa e sem dado,
+      // então a resposta atrasada não tem para onde ir (não existe estado "success" a esperar).
+      const page2Key = moviesKeys.list({ page: 2, year: undefined, winner: undefined })
+      await waitFor(() => expect(queryClient.getQueryState(page2Key)?.fetchStatus).toBe('idle'))
+      expect(queryClient.getQueryData(page2Key)).toBeUndefined()
+      expect(firstCellsOf(bodyRows()).filter((id) => id >= 16 && id <= 30)).toEqual([])
       expect(firstCellsOf(bodyRows())).toEqual(range(31, 40))
       expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
     })
