@@ -1,3 +1,16 @@
+import { YearsPanel } from './YearsPanel'
+import styles from './DashboardPage.module.css'
+
 export function DashboardPage() {
-  return <h1>Dashboard</h1>
+  return (
+    <>
+      <h1>Dashboard</h1>
+      <div className={styles.columns}>
+        <div className={styles.column}>
+          <YearsPanel />
+        </div>
+        <div className={styles.column} />
+      </div>
+    </>
+  )
 }
