@@ -1,3 +1,4 @@
+import { StudiosPanel } from './StudiosPanel'
 import { YearsPanel } from './YearsPanel'
 import styles from './DashboardPage.module.css'
 
@@ -9,7 +10,9 @@ export function DashboardPage() {
         <div className={styles.column}>
           <YearsPanel />
         </div>
-        <div className={styles.column} />
+        <div className={styles.column}>
+          <StudiosPanel />
+        </div>
       </div>
     </>
   )
