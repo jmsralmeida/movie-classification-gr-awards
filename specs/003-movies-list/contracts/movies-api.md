@@ -32,8 +32,9 @@ useMovies(query: MoviesQuery) // useQuery + placeholderData: keepPreviousData
 
 ## Fixtures e handlers (`features/list/testing`)
 
-- `fixtures.ts`: 40 filmes (1980-1989, quatro por ano, o primeiro de cada ano vencedor) e
-  `buildMoviesPageResponse(movies, page, size)` que monta a página Spring (sem imports).
-- `handlers.ts`: `listHandlers` (MSW) emula a API: filtra por `year`/`winner`, fatia por
+- `fixtures.ts` (só dado e funções puras, sem imports): 40 filmes (1980: 10; 1981: 20; 1982: 10; o
+  primeiro de cada ano vencedor), `buildMoviesPageResponse(movies, page, size)` que monta a página
+  Spring e `respondToMoviesQuery(searchParams)` que emula a API: filtra por `year`/`winner`, fatia por
   `page`/`size`, responde `500` para `page < 0` ou `size < 1` e `400` para `year` não numérico.
+- `handlers.ts`: `listHandlers` (MSW) chama `respondToMoviesQuery` para a rota base.
   Testes de lentidão, vazio e falha usam `server.use(...)` por cima.

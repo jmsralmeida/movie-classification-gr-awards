@@ -79,3 +79,21 @@ decisão, mais recente no final.
 - Decisão: corrigir os achados 1, 2, 3 e 5 e manter `docs/api-divergences.md` como elucidação das divergências da API, citado no `plan.md` como fonte detalhada.
 - Motivo: foco e anúncio de erro afetam a operação por teclado e leitor de tela (FR-018, SC-007, Art. VII); o arquivo ajuda o avaliador a entender as divergências entre a API real e o OpenAPI.
 - Onde: `docs/ai/reviews/002-dashboard.md`; commits `e2c15b3`, `6465f7f`, `3059a9a`, `6a7ce99`, `a8218a2`
+
+### 2026-10-31 — DataTable sem prop `variant` no plan da 003
+- Proposta da IA: o `plan.md` da 003 estendia o `DataTable` compartilhado com `variant?: 'plain' | 'striped'` para obter as listras do anexo 2, além de `columns[].headerControl` e `statusRow`.
+- Decisão: remover `variant`. Listras e cabeçalhos centralizados passam a ser composição na feature (wrapper com CSS Modules em `ListPage`); o `DataTable` ganha só `columns[].headerControl` e `statusRow`, opcionais, e o Dashboard não muda. A extensão do `DataTable` vira a primeira tarefa de refatoração, em commit próprio e antes de qualquer tarefa da Lista, com os testes do `DataTable` e do Dashboard verdes e testes novos só para as duas props.
+- Motivo: a diferença é só visual, e o Art. X proíbe prop de variação por caso de uso em componente compartilhado.
+- Onde: `specs/003-movies-list/plan.md` (estrutura, Constitution Check, ordem de implementação), `research.md` (R9), `contracts/ui-components.md`
+
+### 2026-10-31 — Paginação com `aria-disabled` e teste de foco no sucesso (plan da 003)
+- Proposta da IA: o `plan.md` da 003 desabilitava os botões sem destino da `Pagination` com o atributo `disabled` e só testava o foco no caminho de erro (R6) e nos filtros.
+- Decisão: usar `aria-disabled="true"` nos botões sem destino (continuam focáveis e ignoram o clique) e acrescentar na matriz um teste de componente do foco ao acionar "Next page" com sucesso, inclusive ao chegar na última (ou primeira) página.
+- Motivo: ao chegar na última página, "Next page" viraria `disabled` enquanto focado e o navegador poderia tirar o foco dele, contra o FR-020. A pergunta do James sobre o foco durante o carregamento revelou a lacuna.
+- Onde: `specs/003-movies-list/plan.md` (matriz e Constitution Check, Art. VII), `research.md` (R5), `contracts/ui-components.md`, `quickstart.md`
+
+### 2026-10-31 — Correções do analyze da 003 (D1, I1, I2, C1, C2 e baixos)
+- Proposta da IA: `tasks.md` e a matriz do `plan.md` repetiam comportamentos em mais de um teste (bordas `aria-disabled`, reset para a página 1, foco no campo, parâmetros inválidos da URL, abrir a URL direto), o SC-002 ("qualquer página em no máximo duas ações") era falso com a janela de 5 números, o `aria-busy` tinha três definições de wrapper e dois edge cases da spec (resposta antiga lenta, voltar pelo menu) não tinham teste.
+- Decisão: aplicar as cinco remoções de duplicata (cada comportamento em um único nível), reescrever o SC-002 como "primeira, última, anterior, próxima e qualquer número da janela em uma ação" (provado em T010), pôr o `aria-busy` só em volta da `DataTable` (a `Pagination` fica fora), acrescentar o teste de resposta antiga lenta (T018) e o de voltar pelo menu (`App.test`, T016), e ajustar os achados baixos (tamanho inválido no edge, `--opacity-busy` no plan, FR-018 na matriz, frase da T012).
+- Motivo: a duplicata violava o Art. VI; o SC-002 não era verificável; `aria-busy` num contêiner com os botões focados pode fazer o leitor de tela ignorar a região (FR-020). O James escolheu reescrever o SC-002 em vez de mudar a `Pagination`.
+- Onde: `specs/003-movies-list/spec.md` (SC-002, edge), `tasks.md` (T006, T010, T012, T014, T016 a T019), `plan.md` (matriz), `research.md` (R9), `contracts/ui-components.md`

@@ -201,8 +201,8 @@ horizontal da página.
   negativo ou fora de quatro dígitos: validação, sem consulta.
 - URL com `page` além do total de páginas: a API responde sem registros; a view mostra o
   estado de vazio com a paginação para voltar (US3, cenário 6).
-- URL com `page` negativa ou zero, não numérica, ou tamanho inválido: tratada como padrão
-  (a API real rejeita esses valores com erro 500, por isso o app nunca os envia).
+- URL com `page` negativa ou zero ou não numérica: tratada como padrão (a API real rejeita
+  esses valores com erro 500, por isso o app nunca os envia; o tamanho de página não vai na URL).
 - Combinação de filtros que deixa uma única página: a paginação mostra uma página só,
   com todos os controles de navegação desabilitados.
 - Resultado com exatamente 15 filmes ou múltiplo de 15: a última página existe e está
@@ -296,8 +296,9 @@ horizontal da página.
 
 - **SC-001**: Com a API respondendo, a primeira página aparece em até 2 segundos após o
   usuário abrir a view "List", em conexão doméstica comum.
-- **SC-002**: Um usuário chega a qualquer página da lista em no máximo duas ações a partir
-  de qualquer outra (usando primeira/última ou o número de página).
+- **SC-002**: Um usuário vai à primeira, à última, à anterior, à próxima e a qualquer página
+  numerada exibida na paginação com uma única ação; as páginas fora da janela exibida são
+  alcançadas por esses mesmos controles, em passos sucessivos.
 - **SC-003**: Um usuário encontra os filmes de um ano com uma única ação (digitar o ano
   de quatro dígitos), sem precisar acionar um botão adicional.
 - **SC-004**: Em 100% dos cenários de combinação de filtros testados, todas as linhas

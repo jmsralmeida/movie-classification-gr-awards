@@ -108,11 +108,11 @@ Verificado em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
 - `size=500` é aceito; o app usa sempre 15.
 
 ## R8. Dados de teste
-- **Decisão**: `features/list/testing/fixtures.ts` com um conjunto fixo de 40 filmes (anos 1980 a
-  1989, quatro por ano, o primeiro de cada ano vencedor; títulos reais do anexo 2 nos primeiros 15)
-  e `handlers.ts` com um handler MSW que **emula a API**: filtra por `year`/`winner`, fatia por
+- **Decisão**: `features/list/testing/fixtures.ts` com um conjunto fixo de 40 filmes (1980: 10 filmes, ids 1 a 10;
+  1981: 20, ids 11 a 30; 1982: 10, ids 31 a 40; o primeiro de cada ano é o vencedor; títulos reais do
+  anexo 2 nos ids 1 a 15) e a função pura `respondToMoviesQuery(searchParams)`, que **emula a API**: filtra por `year`/`winner`, fatia por
   `page`/`size` e devolve a página no formato Spring; para `page < 0` ou `size < 1` devolve `500`, e
-  para `year` não numérico, `400`, como a API real. O E2E reaproveita as fixtures (R9 da 002: só
+  para `year` não numérico, `400`, como a API real; `handlers.ts` (MSW) e o E2E chamam essa função. O E2E reaproveita as fixtures (R9 da 002: só
   dado cru e funções sem imports).
 - **Racional**: os testes provam que o app envia os parâmetros certos e que as linhas satisfazem aos
   filtros (SC-004) sem listar respostas à mão; um valor inválido enviado pelo app quebra o teste.
@@ -125,8 +125,8 @@ Verificado em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
   `<div>` com classe de `ListPage.module.css`, que aplica `tbody tr:nth-child(even)` (fundo
   `--color-table-stripe-bg`) e `th { text-align: center }` por seletor descendente. Para vencer o
   `.table th` do `DataTable.module.css` sem depender da ordem de carga, o seletor da Lista é mais
-  específico (`.frame table th`). O mesmo wrapper leva o `aria-busy`. Tokens novos em `tokens.css`:
-  `--color-table-stripe-bg` e `--color-pagination-disabled`; o botão da página atual usa
+  específico (`.frame table th`). O mesmo wrapper, só em volta da `DataTable` (a `Pagination` fica fora), leva o `aria-busy`. Tokens novos em `tokens.css`:
+  `--color-table-stripe-bg`, `--color-pagination-disabled` e `--opacity-busy` (esmaecimento durante a troca de página); o botão da página atual usa
   `--color-button-bg`.
 - **Racional**: a diferença é só visual, e Art. X proíbe prop de variação por caso de uso em
   componente compartilhado. O contrato do `DataTable` fica limitado a dois slots opcionais

@@ -62,8 +62,9 @@ interface DataTableProps<T> {
 ```
 
 - Com `statusRow`, as linhas de dados e `emptyMessage` não são renderizadas; o cabeçalho continua.
-- `columns[].headerControl` fica dentro do `th` da própria coluna, abaixo do texto de `header`; o
-  nome acessível do `th` continua sendo o `header`.
+- `columns[].headerControl` fica dentro do `th` da própria coluna, abaixo do texto de `header`. O
+  nome acessível do `th` pode incluir o valor do controle embutido; por isso os testes localizam os
+  controles por papel (`textbox`, `combobox`), não pelo nome do `columnheader`.
 - Aparência (listras, alinhamento dos cabeçalhos) **não** é prop: quem usa a tabela compõe com um
   wrapper e CSS próprio.
 - As duas props são opcionais; sem elas, o Dashboard renderiza exatamente como antes.
@@ -72,7 +73,7 @@ interface DataTableProps<T> {
 
 | Componente | Responsabilidade |
 |------------|------------------|
-| `ListPage` | `<h1>List movies</h1>`; lê a query da URL (`useListParams`), chama `useMovies`, monta `DataTable` (caption "Movies") dentro de um wrapper de `ListPage.module.css` (listras e cabeçalhos centralizados) com `statusRow` quando o estado não é `success`, `aria-busy` na região da tabela durante `isPlaceholderData`, `Pagination` quando `totalPages > 0` e o foco no "Try again" (R6). |
+| `ListPage` | `<h1>List movies</h1>`; lê a query da URL (`useListParams`), chama `useMovies`, monta `DataTable` (caption "Movies") dentro de um wrapper de `ListPage.module.css` (listras e cabeçalhos centralizados) com `statusRow` quando o estado não é `success`, `aria-busy` num wrapper só da tabela durante `isPlaceholderData` (a `Pagination` fica fora), `Pagination` quando `totalPages > 0` e o foco no "Try again" (R6). |
 | `useListParams` | `useSearchParams` → `{ query, setPage, setYear, setWinner }`; filtros montam a URL sem `page`. |
 | `YearFilter` | Campo "Filter by year" (rótulo oculto, `placeholder` igual), rascunho local, validação derivada (R3). Lê e grava a URL pelo `useListParams`. |
 | `WinnerFilter` | `<select>` com rótulo oculto "Filter by winner" e opções "Yes/No", "Yes", "No". Valor derivado da URL. |

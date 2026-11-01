@@ -490,3 +490,76 @@ Gerado automaticamente pelo hook `.claude/hooks/log-prompt.mjs`.
 ### 2026-11-01 01:31 UTC · sessão bb9520f1
 
 > /ai-interaction-log
+
+### 2026-11-01 01:42 UTC · sessão f9dc3dfc
+
+> /speckit-specify Lista de filmes conforme docs/requirements/challenge.md e anexo-2-movies-list.png: tabela com ID, Year, Title e Winner?; paginação no servidor (page, size); filtro por ano e por vencedor (Yes/No/todos) enviados como query params para a API; filtros e página refletidos na URL; estados de carregando, vazio e erro.
+
+### 2026-11-01 01:46 UTC · sessão f9dc3dfc
+
+> /speckit-clarify
+
+### 2026-11-01 01:47 UTC · sessão f9dc3dfc
+
+> A
+
+### 2026-11-01 01:48 UTC · sessão f9dc3dfc
+
+> /speckit-plan
+
+### 2026-11-01 02:01 UTC · sessão f9dc3dfc
+
+> <pasted_content id="c7fe">
+> Revisão do plan da 003 — ajuste 1 (DataTable).
+> 
+> Antes de mudar qualquer coisa, me explique em poucas linhas o que a prop `variant` muda no DataTable: só aparência, layout ou comportamento?
+> 
+> Depois, ajuste o plano assim:
+> - Remova `variant`. Se a diferença for visual, resolva por composição (className/estilo do container ou um wrapper na feature), não por prop no componente compartilhado. Isso segue o Art. X (sem props de variação por caso de uso).
+> - Mova o controle de filtro para a definição da coluna: `columns[].headerControl?: ReactNode`, renderizado dentro do <th> daquela coluna. Isso reflete o anexo 2, onde o filtro de ano fica no cabeçalho "Year" e o de vencedor no "Winner?". Remova `headerControl` do nível da tabela.
+> - Mantenha `statusRow` (ou nome equivalente) como slot opcional para carregando/vazio/erro dentro do <tbody>, preservando o cabeçalho e os filtros visíveis.
+> - As props novas continuam opcionais: o Dashboard (002) não muda de comportamento.
+> - A mudança no DataTable vira uma tarefa de refatoração própria, antes de qualquer tarefa da Lista, com os testes do DataTable e do Dashboard verdes e testes novos só para `columns[].headerControl` e `statusRow`.
+> 
+> Atualize plan.md (estrutura e ordem de implementação), research.md (registre a decisão revisada e o motivo), contracts/ui-components.md (nova API do DataTable) e a matriz de testes se algum teste mudar de nível. Mantenha o Constitution Check coerente. Não escreva código.
+> 
+> Por fim, registre esta correção em docs/ai/decisions.md (proposta original, decisão, motivo) usando a skill ai-interaction-log.
+> </pasted_content id="c7fe">
+
+### 2026-11-01 02:04 UTC · sessão f9dc3dfc
+
+> No plano atual, quando o usuário clica em "Next page" e a requisição dá certo, a paginação continua montada durante o loading? O foco permanece no botão?
+> 
+> Se a resposta for nao, vamos adicionar para nao ter a tabela piscando
+
+### 2026-11-01 02:05 UTC · sessão f9dc3dfc
+
+> Sim, aplica as duas
+
+### 2026-11-01 02:07 UTC · sessão f9dc3dfc
+
+> Pode atualizar o decisions
+
+### 2026-11-01 02:08 UTC · sessão f9dc3dfc
+
+> /speckit-tasks
+
+### 2026-11-01 02:17 UTC · sessão f9dc3dfc
+
+> /speckit-analyze
+
+### 2026-11-01 02:20 UTC · sessão f9dc3dfc
+
+> Vamos resolver essa analise de forma interativa
+
+### 2026-11-01 02:23 UTC · sessão f9dc3dfc
+
+> /speckit-analyze
+
+### 2026-11-01 02:30 UTC · sessão f9dc3dfc
+
+> Aplicar os ajustes do plan
+
+### 2026-11-01 02:30 UTC · sessão f9dc3dfc
+
+> /ai-interaction-log
