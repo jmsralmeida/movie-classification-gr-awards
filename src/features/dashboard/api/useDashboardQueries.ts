@@ -1,7 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import type { StudioWinCount } from '../model/dashboard.types'
 import { selectTopStudios } from '../model/mappers'
-import { fetchProducerIntervals, fetchStudios, fetchYearsWithMultipleWinners } from './dashboardApi'
+import {
+  fetchProducerIntervals,
+  fetchStudios,
+  fetchWinnersByYear,
+  fetchYearsWithMultipleWinners,
+} from './dashboardApi'
 import { dashboardKeys } from './dashboardKeys'
 
 export function useYearsWithMultipleWinners() {
@@ -28,5 +33,14 @@ export function useProducerIntervals() {
   return useQuery({
     queryKey: dashboardKeys.producerIntervals,
     queryFn: ({ signal }) => fetchProducerIntervals(signal),
+  })
+}
+
+export function useWinnersByYear(year: string | undefined) {
+  return useQuery({
+    // A chave com '' só existe para satisfazer o tipo: sem ano a consulta fica desligada.
+    queryKey: dashboardKeys.winnersByYear(year ?? ''),
+    queryFn: ({ signal }) => fetchWinnersByYear(year ?? '', signal),
+    enabled: year !== undefined,
   })
 }

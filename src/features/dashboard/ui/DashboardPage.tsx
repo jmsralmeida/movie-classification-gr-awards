@@ -1,5 +1,6 @@
 import { ProducersPanel } from './ProducersPanel'
 import { StudiosPanel } from './StudiosPanel'
+import { WinnersByYearPanel } from './WinnersByYearPanel'
 import { YearsPanel } from './YearsPanel'
 import styles from './DashboardPage.module.css'
 
@@ -14,6 +15,7 @@ export function DashboardPage() {
         </div>
         <div className={styles.column}>
           <StudiosPanel />
+          <WinnersByYearPanel />
         </div>
       </div>
     </>
