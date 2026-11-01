@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { http, HttpResponse, type JsonBodyType } from 'msw'
+import { delay, http, HttpResponse, type JsonBodyType } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { apiBaseUrl } from '../../../shared/api/config'
 import { renderWithProviders } from '../../../test/render'
@@ -388,6 +388,103 @@ describe('ListPage', () => {
       expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('false')
       await waitForRows([27, 28, 29, 30])
       expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page')
+    })
+  })
+
+  describe('loading and empty states', () => {
+    const tableFrame = () => screen.getByRole('table', { name: 'Movies' }).closest('[aria-busy]')
+
+    it('shows "Loading…" in place of the rows, keeping the title and the filters, without pagination', () => {
+      server.use(http.get(apiBaseUrl, async () => delay('infinite')))
+      renderList()
+
+      expect(within(screen.getByRole('table')).getByRole('status')).toHaveTextContent('Loading…')
+      expect(bodyRows()).toHaveLength(1)
+      expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the previous rows, busy and with pagination, while the next page loads', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      expect(tableFrame()).toHaveAttribute('aria-busy', 'false')
+      const release = holdResponses()
+
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+
+      expect(tableFrame()).toHaveAttribute('aria-busy', 'true')
+      expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('navigation', { name: 'Pagination' }).closest('[aria-busy="true"]'),
+      ).toBeNull()
+      release()
+      await waitForRows(range(16, 30))
+      expect(tableFrame()).toHaveAttribute('aria-busy', 'false')
+    })
+
+    it.each([
+      ['a year without movies', '/list?year=1800'],
+      ['a combination without movies', '/list?year=1800&winner=true'],
+    ])('shows "No movies found." for %s, with filters and no pagination', async (_name, route) => {
+      renderList(route)
+
+      expect(await screen.findByText('No movies found.')).toBeVisible()
+      expect(bodyRows()).toHaveLength(1)
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it('shows "No movies found." with pagination for a page beyond the total and leads back', async () => {
+      const user = userEvent.setup()
+      renderList('/list?page=99')
+
+      expect(await screen.findByText('No movies found.')).toBeVisible()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(pagination.querySelectorAll('[aria-current]')).toHaveLength(0)
+
+      await user.click(within(pagination).getByRole('button', { name: 'Previous page' }))
+
+      await waitForRows(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('does not let a slow response of an old page overwrite the latest page', async () => {
+      const user = userEvent.setup()
+      let releasePage2: () => void = () => {}
+      const page2Gate = new Promise<void>((resolve) => {
+        releasePage2 = resolve
+      })
+      let page2Served = false
+      server.use(
+        http.get(apiBaseUrl, async ({ request }) => {
+          const params = new URL(request.url).searchParams
+          if (params.get('page') === '1') {
+            await page2Gate
+            page2Served = true
+          }
+          const { status, body } = respondToMoviesQuery(params)
+          return HttpResponse.json(body as JsonBodyType, { status })
+        }),
+      )
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.click(screen.getByRole('button', { name: 'Page 2' }))
+      await user.click(screen.getByRole('button', { name: 'Page 3' }))
+      await waitForRows(range(31, 40))
+
+      releasePage2()
+      await waitFor(() => expect(page2Served).toBe(true))
+      // Deixa a resposta atrasada chegar ao cliente antes de conferir a tabela.
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(firstCellsOf(bodyRows())).toEqual(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
     })
   })
 })

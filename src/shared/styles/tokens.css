@@ -16,6 +16,9 @@
   --color-button-text: #ffffff;
   --color-pagination-disabled: #6c757d;
 
+  /* Esmaecimento durante a troca de página */
+  --opacity-busy: 0.6;
+
   /* Foco */
   --focus-outline-width: 2px;
   --focus-outline-offset: 2px;

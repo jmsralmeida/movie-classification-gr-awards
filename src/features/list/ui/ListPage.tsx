@@ -1,4 +1,6 @@
 import { Pagination } from '../../../shared/ui/Pagination/Pagination'
+import { getPanelStatus } from '../../../shared/ui/Panel/panelStatus'
+import { StatusMessage } from '../../../shared/ui/StatusMessage/StatusMessage'
 import { DataTable } from '../../../shared/ui/DataTable/DataTable'
 import type { Column } from '../../../shared/ui/DataTable/DataTable.types'
 import { useMovies } from '../api/useMovies'
@@ -27,18 +29,33 @@ const columns: Column<Movie>[] = [
 
 export function ListPage() {
   const { query, setPage } = useListParams()
-  const { data } = useMovies(query)
+  const movies = useMovies(query)
+  const { data } = movies
+  const status = getPanelStatus(movies, data?.movies.length === 0)
+  const frameClassName = movies.isPlaceholderData ? `${styles.frame} ${styles.busy}` : styles.frame
 
   return (
     <>
       <h1>List movies</h1>
       <div className={styles.card}>
-        <DataTable
-          caption="Movies"
-          columns={columns}
-          rows={data?.movies ?? []}
-          getRowKey={(movie) => movie.id}
-        />
+        {/* A paginação fica fora do wrapper ocupado, para não marcar como ocupada a região do foco. */}
+        <div className={frameClassName} aria-busy={movies.isPlaceholderData}>
+          <DataTable
+            caption="Movies"
+            columns={columns}
+            rows={data?.movies ?? []}
+            getRowKey={(movie) => movie.id}
+            statusRow={
+              status === 'success' ? undefined : (
+                <StatusMessage
+                  status={status}
+                  emptyMessage="No movies found."
+                  onRetry={() => void movies.refetch()}
+                />
+              )
+            }
+          />
+        </div>
         {data !== undefined && data.totalPages > 0 && (
           <Pagination page={query.page} totalPages={data.totalPages} onPageChange={setPage} />
         )}

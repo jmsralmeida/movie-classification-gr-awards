@@ -3,3 +3,11 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
 }
+
+.frame {
+  min-width: 0;
+}
+
+.busy {
+  opacity: var(--opacity-busy);
+}
