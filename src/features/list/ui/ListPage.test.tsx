@@ -67,7 +67,8 @@ describe('ListPage', () => {
     expect(
       within(table)
         .getAllByRole('columnheader')
-        .map((header) => header.textContent),
+        // Só o texto do próprio título (os filtros também ficam dentro do th).
+        .map((header) => header.firstChild?.textContent),
     ).toEqual(['ID', 'Year', 'Title', 'Winner?'])
 
     expect(await screen.findByRole('cell', { name: "Can't Stop the Music" })).toBeInTheDocument()
@@ -170,6 +171,81 @@ describe('ListPage', () => {
         'true',
       )
       expect(screen.getByRole('button', { name: 'Previous page' })).toHaveFocus()
+    })
+  })
+
+  describe('winner filter', () => {
+    const winnerSelect = () => screen.getByRole('combobox', { name: 'Filter by winner' })
+    const winnerCells = () =>
+      bodyRows().map((row) => within(row).getAllByRole('cell')[3]?.textContent)
+
+    it('offers Yes/No, Yes and No, with Yes/No selected by default', () => {
+      renderList()
+
+      expect(
+        within(winnerSelect())
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['Yes/No', 'Yes', 'No'])
+      expect(screen.getByRole('option', { name: 'Yes/No', selected: true })).toBeInTheDocument()
+    })
+
+    it('shows only winners when "Yes" is chosen', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.selectOptions(winnerSelect(), 'Yes')
+
+      await waitForRows([1, 11, 31])
+      expect(winnerCells()).toEqual(['Yes', 'Yes', 'Yes'])
+      expect(requests.at(-1)?.get('winner')).toBe('true')
+    })
+
+    it('shows only non-winners when "No" is chosen, with the pagination of the filtered total', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(requests.at(-1)?.get('winner')).toBe('false'))
+      await waitFor(() => expect(winnerCells()).toEqual(Array(15).fill('No')))
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 3' })).toBeInTheDocument()
+      expect(within(pagination).queryByRole('button', { name: 'Page 4' })).not.toBeInTheDocument()
+    })
+
+    it('goes back to page 1 when the filter changes while on page 3', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?page=3')
+      await waitForRows(range(31, 40))
+
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(requests.at(-1)?.get('winner')).toBe('false'))
+      expect(requests.at(-1)?.get('page')).toBe('0')
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+          'aria-current',
+          'page',
+        ),
+      )
+    })
+
+    it('removes the winner parameter when it goes back to Yes/No', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?winner=true')
+      await waitForRows([1, 11, 31])
+
+      await user.selectOptions(winnerSelect(), 'Yes/No')
+
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.has('winner')).toBe(false)
     })
   })
 })
