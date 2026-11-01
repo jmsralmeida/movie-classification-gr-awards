@@ -37,7 +37,7 @@ mapper em `model/mappers.ts` antes de chegar à UI (Art. III). Referência:
 | Situação | Estado | O que a tela mostra |
 |----------|--------|---------------------|
 | Primeira consulta em andamento | `loading` | cabeçalho com filtros + linha "Loading…" (`role="status"`); sem paginação |
-| Consulta com a lista anterior em mãos (`isPlaceholderData`) | `success` | lista anterior, `aria-busy="true"` e esmaecida; paginação ativa |
+| Consulta com a lista anterior em mãos (`isPlaceholderData`) | `success` | lista anterior, `aria-busy="true"` no `tbody` e linhas esmaecidas; paginação ativa |
 | Falha (rede, 4xx/5xx, formato) | `error` | cabeçalho com filtros + "Could not load this data." e "Try again"; sem paginação |
 | `movies` vazio | `empty` | cabeçalho com filtros + "No movies found."; paginação só se `totalPages > 0` |
 | Com filmes | `success` | linhas + paginação |

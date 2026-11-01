@@ -125,7 +125,7 @@ Verificado em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
   `<div>` com classe de `ListPage.module.css`, que aplica `tbody tr:nth-child(even)` (fundo
   `--color-table-stripe-bg`) e `th { text-align: center }` por seletor descendente. Para vencer o
   `.table th` do `DataTable.module.css` sem depender da ordem de carga, o seletor da Lista é mais
-  específico (`.frame table th`). O mesmo wrapper, só em volta da `DataTable` (a `Pagination` fica fora), leva o `aria-busy`. Tokens novos em `tokens.css`:
+  específico (`.frame table th`). O `aria-busy` fica só no `tbody` (prop `busy` do `DataTable`); filtros no cabeçalho e a `Pagination` ficam fora. Tokens novos em `tokens.css`:
   `--color-table-stripe-bg`, `--color-pagination-disabled` e `--opacity-busy` (esmaecimento durante a troca de página); o botão da página atual usa
   `--color-button-bg`.
 - **Racional**: a diferença é só visual, e Art. X proíbe prop de variação por caso de uso em

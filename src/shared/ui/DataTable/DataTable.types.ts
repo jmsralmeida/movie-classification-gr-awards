@@ -18,4 +18,6 @@ export interface DataTableProps<T> {
   emptyMessage?: string
   // Uma linha com colSpan no lugar das linhas de dados e de emptyMessage.
   statusRow?: ReactNode
+  // Marca só o corpo da tabela como ocupado (aria-busy); cabeçalho e controles ficam de fora.
+  busy?: boolean
 }

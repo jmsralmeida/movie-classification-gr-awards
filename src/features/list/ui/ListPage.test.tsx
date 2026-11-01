@@ -392,7 +392,8 @@ describe('ListPage', () => {
   })
 
   describe('loading and empty states', () => {
-    const tableFrame = () => screen.getByRole('table', { name: 'Movies' }).closest('[aria-busy]')
+    const tableBody = () =>
+      within(screen.getByRole('table', { name: 'Movies' })).getAllByRole('rowgroup')[1]
 
     it('shows "Loading…" in place of the rows, keeping the title and the filters, without pagination', () => {
       server.use(http.get(apiBaseUrl, async () => delay('infinite')))
@@ -410,21 +411,26 @@ describe('ListPage', () => {
       const user = userEvent.setup()
       renderList()
       await waitForRows(range(1, 15))
-      expect(tableFrame()).toHaveAttribute('aria-busy', 'false')
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
       const release = holdResponses()
 
       await user.click(screen.getByRole('button', { name: 'Next page' }))
 
-      expect(tableFrame()).toHaveAttribute('aria-busy', 'true')
+      expect(tableBody()).toHaveAttribute('aria-busy', 'true')
       expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
       expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      // Só o corpo da tabela fica ocupado: cabeçalho (filtros) e paginação, não.
+      expect(screen.getByRole('table', { name: 'Movies' })).not.toHaveAttribute('aria-busy')
+      expect(
+        screen.getByRole('textbox', { name: 'Filter by year' }).closest('[aria-busy]'),
+      ).toBeNull()
       expect(
         screen.getByRole('navigation', { name: 'Pagination' }).closest('[aria-busy="true"]'),
       ).toBeNull()
       release()
       await waitForRows(range(16, 30))
-      expect(tableFrame()).toHaveAttribute('aria-busy', 'false')
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
     })
 
     it.each([

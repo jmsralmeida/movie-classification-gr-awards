@@ -26,6 +26,23 @@ function renderTable(rows: Row[], emptyMessage?: string) {
 }
 
 describe('DataTable', () => {
+  it('marks only the body as busy, leaving the header controls out', () => {
+    render(
+      <DataTable
+        caption="Sample rows"
+        columns={[{ ...columns[0]!, headerControl: <input aria-label="Filter" /> }, columns[1]!]}
+        rows={[{ id: 1, name: 'A' }]}
+        getRowKey={(row) => row.id}
+        busy
+      />,
+    )
+
+    const [header, body] = screen.getAllByRole('rowgroup')
+    expect(body).toHaveAttribute('aria-busy', 'true')
+    expect(header).not.toHaveAttribute('aria-busy')
+    expect(screen.getByRole('textbox', { name: 'Filter' }).closest('[aria-busy]')).toBeNull()
+  })
+
   it('names the table from its caption and renders one header per column', () => {
     renderTable([{ id: 1, name: 'A' }])
 

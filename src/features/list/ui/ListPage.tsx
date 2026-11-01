@@ -34,7 +34,6 @@ export function ListPage() {
   const { data } = movies
   const status = getPanelStatus(movies, data?.movies.length === 0)
   const retryRef = useRef<HTMLButtonElement>(null)
-  const frameClassName = movies.isPlaceholderData ? `${styles.frame} ${styles.busy}` : styles.frame
 
   // Se a falha desmontou o botão focado (ex.: "Next page"), o foco foi ao body: leva-o ao "Try again".
   useEffect(() => {
@@ -45,13 +44,14 @@ export function ListPage() {
     <>
       <h1>List movies</h1>
       <div className={styles.card}>
-        {/* A paginação fica fora do wrapper ocupado, para não marcar como ocupada a região do foco. */}
-        <div className={frameClassName} aria-busy={movies.isPlaceholderData}>
+        {/* aria-busy fica só no tbody (DataTable): filtros e paginação, onde está o foco, ficam fora. */}
+        <div className={styles.frame}>
           <DataTable
             caption="Movies"
             columns={columns}
             rows={data?.movies ?? []}
             getRowKey={(movie) => movie.id}
+            busy={movies.isPlaceholderData}
             statusRow={
               status === 'success' ? undefined : (
                 <StatusMessage

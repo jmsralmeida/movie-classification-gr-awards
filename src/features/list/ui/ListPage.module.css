@@ -10,7 +10,8 @@
   min-width: 0;
 }
 
-.busy {
+/* Esmaece só as linhas; cabeçalho (com os filtros) e paginação ficam com opacidade total. */
+.frame tbody[aria-busy='true'] {
   opacity: var(--opacity-busy);
 }
 

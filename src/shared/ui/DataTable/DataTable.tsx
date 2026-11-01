@@ -8,6 +8,7 @@ export function DataTable<T>({
   getRowKey,
   emptyMessage,
   statusRow,
+  busy,
 }: DataTableProps<T>) {
   return (
     <table className={styles.table}>
@@ -24,7 +25,7 @@ export function DataTable<T>({
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody aria-busy={busy}>
         {statusRow !== undefined && (
           <tr>
             <td colSpan={columns.length}>{statusRow}</td>
