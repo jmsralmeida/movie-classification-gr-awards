@@ -21,3 +21,58 @@ export const studiosResponse = {
 }
 
 export const emptyStudiosResponse = { studios: [] }
+
+export const intervalsResponse = {
+  min: [{ producer: 'Joel Silver', interval: 1, previousWin: 1990, followingWin: 1991 }],
+  max: [{ producer: 'Matthew Vaughn', interval: 13, previousWin: 2002, followingWin: 2015 }],
+}
+
+export const intervalsWithTiesResponse = {
+  min: [
+    { producer: 'Joel Silver', interval: 1, previousWin: 1990, followingWin: 1991 },
+    { producer: 'Bo Derek', interval: 1, previousWin: 1984, followingWin: 1985 },
+  ],
+  max: [
+    { producer: 'Matthew Vaughn', interval: 13, previousWin: 2002, followingWin: 2015 },
+    { producer: 'Another Producer', interval: 13, previousWin: 1980, followingWin: 1993 },
+  ],
+}
+
+export const intervalsOnlyMaxResponse = {
+  min: [],
+  max: intervalsResponse.max,
+}
+
+export const emptyIntervalsResponse = { min: [], max: [] }
+
+export const winnersByYear2018Response = [
+  {
+    id: 197,
+    year: 2018,
+    title: 'Holmes & Watson',
+    studios: ['Columbia Pictures', 'Mimran Schur Pictures'],
+    producers: ['Will Ferrell', 'Adam McKay', 'Jimmy Miller', 'Clayton Townsend'],
+    winner: true,
+  },
+]
+
+export const winnersWithTiesResponse = [
+  {
+    id: 101,
+    year: 1990,
+    title: 'First Winner',
+    studios: ['Studio A'],
+    producers: ['Producer A'],
+    winner: true,
+  },
+  {
+    id: 102,
+    year: 1990,
+    title: 'Second Winner',
+    studios: ['Studio B'],
+    producers: ['Producer B'],
+    winner: true,
+  },
+]
+
+export const emptyWinnersResponse: unknown[] = []
