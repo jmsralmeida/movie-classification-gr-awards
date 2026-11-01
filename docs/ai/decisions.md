@@ -55,3 +55,15 @@ decisão, mais recente no final.
 - Decisão: usar "Outsera Razzies", o nome do projeto.
 - Motivo: o texto do anexo é só referência visual; o nome do projeto é mais adequado.
 - Onde: `specs/001-app-shell/spec.md` (Clarifications, FR-001)
+
+### 2026-10-31 — Glob do E2E offline na T010
+- Proposta da IA: na T010, bloquear a API no teste (d) com `page.route('**/api/**', ...)`, como o texto da tarefa.
+- Decisão: restringir a glob a `**/challenge.outsera.tech/**` e ajustar o texto da T010 em `tasks.md`, em commit `test(e2e):` separado antes da T016.
+- Motivo: depois da T016 o app importa `src/shared/api/queryClient.ts`, e o Vite dev serve o módulo nesse caminho; a glob antiga abortava o próprio app e derrubava o teste nos dois viewports.
+- Onde: `e2e/shell-navigation.spec.ts`, `specs/001-app-shell/tasks.md`, commit `50176eb`
+
+### 2026-10-31 — Achados da revisão T020 tratados e adiados
+- Proposta da IA: o `code-reviewer` apontou 6 achados (2 médios, 4 baixos).
+- Decisão: tratar a duplicação de testes entre níveis, os títulos do E2E sem o risco de integração e o link atual distinguido só por cor; adiar a normalização do `path` no cliente HTTP e o `h1` estilizado dentro do `AppShell`.
+- Motivo: os três primeiros violam o Art. VI ou o WCAG 1.4.1; os adiados não afetam a entrega atual (a feature seguinte usa caminhos literais).
+- Onde: `docs/ai/reviews/001-app-shell.md`
