@@ -73,4 +73,55 @@ describe('DataTable', () => {
     expect(within(row).getByText('<b>x</b> &amp; y')).toBeInTheDocument()
     expect(row.querySelector('b')).toBeNull()
   })
+
+  it('renders a header control inside the header of its own column only', () => {
+    render(
+      <DataTable
+        caption="Sample rows"
+        columns={[
+          { id: 'id', header: 'Id', render: (row: Row) => row.id },
+          {
+            id: 'name',
+            header: 'Name',
+            render: (row: Row) => row.name,
+            headerControl: <input aria-label="Filter name" />,
+          },
+        ]}
+        rows={[{ id: 1, name: 'A' }]}
+        getRowKey={(row) => row.id}
+      />,
+    )
+
+    const [idHeader, nameHeader] = screen.getAllByRole('columnheader') as [HTMLElement, HTMLElement]
+    expect(within(nameHeader).getByRole('textbox', { name: 'Filter name' })).toBeInTheDocument()
+    expect(within(idHeader).queryByRole('textbox')).not.toBeInTheDocument()
+  })
+
+  it('shows a status row spanning all columns instead of rows and the empty message, keeping the header controls', () => {
+    render(
+      <DataTable
+        caption="Sample rows"
+        columns={[
+          { id: 'id', header: 'Id', render: (row: Row) => row.id },
+          {
+            id: 'name',
+            header: 'Name',
+            render: (row: Row) => row.name,
+            headerControl: <input aria-label="Filter name" />,
+          },
+        ]}
+        rows={[{ id: 1, name: 'A' }]}
+        getRowKey={(row) => row.id}
+        emptyMessage="Nothing to show."
+        statusRow={<p>Loading status</p>}
+      />,
+    )
+
+    const cell = screen.getByRole('cell', { name: 'Loading status' })
+    expect(cell).toHaveAttribute('colspan', '2')
+    expect(screen.getAllByRole('row')).toHaveLength(2)
+    expect(screen.queryByRole('cell', { name: 'A' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Nothing to show.')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Filter name' })).toBeVisible()
+  })
 })
