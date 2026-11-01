@@ -1,0 +1,25 @@
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/*
+ * 64rem é o breakpoint porque a área de conteúdo em 768 px (cerca de 544 px) não comporta
+ * duas tabelas de quatro colunas lado a lado. Valor de @media não pode ser variável CSS:
+ * única exceção a "sem valores mágicos".
+ * Abaixo dele: uma coluna, na ordem do DOM (anos, produtores, estúdios, busca).
+ */
+@media (min-width: 64rem) {
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}

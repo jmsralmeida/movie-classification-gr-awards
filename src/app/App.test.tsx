@@ -1,10 +1,16 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { dashboardHandlers } from '../features/dashboard/testing/handlers'
 import { renderWithProviders } from '../test/render'
+import { server } from '../test/server'
 import { App } from './App'
 
 describe('App', () => {
+  beforeEach(() => {
+    server.use(...dashboardHandlers)
+  })
+
   it('shows the app title in the banner', () => {
     renderWithProviders(<App />)
 

@@ -67,3 +67,15 @@ decisão, mais recente no final.
 - Decisão: tratar a duplicação de testes entre níveis, os títulos do E2E sem o risco de integração e o link atual distinguido só por cor; adiar a normalização do `path` no cliente HTTP e o `h1` estilizado dentro do `AppShell`.
 - Motivo: os três primeiros violam o Art. VI ou o WCAG 1.4.1; os adiados não afetam a entrega atual (a feature seguinte usa caminhos literais).
 - Onde: `docs/ai/reviews/001-app-shell.md`
+
+### 2026-10-31 — Correções do analyze da 002 (D1, I1, C1, C2)
+- Proposta da IA: `tasks.md` e a matriz do `plan.md` repetiam o mesmo comportamento em níveis diferentes (texto literal em `DataTable` e `StudiosPanel`, estado de vazio em T010, T012 e T015, voltar/avançar em T013 e no E2E), o E2E importava as fixtures sem extensão e dois edge cases da spec (duplo clique, texto longo) não tinham teste.
+- Decisão: aplicar D1, I1, C1 e C2 do relatório; cada comportamento fica em um só nível, o import usa `fixtures.ts` com extensão e sem imports, e entram o teste de duplo clique e o de nome longo no teste de 768. U1, A1 e I2 (baixos) ficaram sem mudança.
+- Motivo: D1 violava o Art. VI; I1 quebraria o `tsc -b`, pois o `e2e/` é compilado pelo `tsconfig.node.json` (`nodenext`).
+- Onde: `specs/002-dashboard/tasks.md`, `plan.md` (matriz de testes), `research.md` (R9)
+
+### 2026-10-31 — Achados da revisão T021 da 002 e destino do api-divergences.md
+- Proposta da IA: o `code-reviewer` apontou 5 achados (2 médios, 3 baixos), entre eles remover `docs/api-divergences.md`, que o implementador criou fora das tasks e que duplica o plan.
+- Decisão: corrigir os achados 1, 2, 3 e 5 e manter `docs/api-divergences.md` como elucidação das divergências da API, citado no `plan.md` como fonte detalhada.
+- Motivo: foco e anúncio de erro afetam a operação por teclado e leitor de tela (FR-018, SC-007, Art. VII); o arquivo ajuda o avaliador a entender as divergências entre a API real e o OpenAPI.
+- Onde: `docs/ai/reviews/002-dashboard.md`; commits `e2c15b3`, `6465f7f`, `3059a9a`, `6a7ce99`, `a8218a2`
