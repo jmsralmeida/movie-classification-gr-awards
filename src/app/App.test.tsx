@@ -40,6 +40,19 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
   })
 
+  it('marks the link of the current view with aria-current and follows the navigation', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<App />)
+    const nav = within(screen.getByRole('navigation'))
+    expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'List' })).not.toHaveAttribute('aria-current')
+
+    await user.click(nav.getByRole('link', { name: 'List' }))
+
+    expect(nav.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current')
+  })
+
   it('opens the first page without filters when the List link is used from a filtered list', async () => {
     const user = userEvent.setup()
     renderWithProviders(<App />, { route: '/list?page=2&winner=true' })
