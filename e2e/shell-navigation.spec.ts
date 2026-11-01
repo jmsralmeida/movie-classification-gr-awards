@@ -12,7 +12,9 @@ test('browser back button and a URL opened directly show the right view', async 
   await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
 })
 
-test('Tab and Enter walk the menu links and the focus ring is visible', async ({ page }) => {
+test('real CSS: Tab and Enter walk the menu links and the focus ring is visible', async ({
+  page,
+}) => {
   await page.goto('/dashboard')
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
   const dashboard = page.getByRole('link', { name: 'Dashboard' })
@@ -30,7 +32,7 @@ test('Tab and Enter walk the menu links and the focus ring is visible', async ({
   await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
 })
 
-test('no horizontal scroll; header and menu stay in place while tall content scrolls', async ({
+test('real CSS: no horizontal scroll; header and menu stay in place while tall content scrolls', async ({
   page,
 }) => {
   await page.goto('/dashboard')
@@ -63,7 +65,7 @@ test('no horizontal scroll; header and menu stay in place while tall content scr
   await expect(page.getByRole('link', { name: 'List' })).toBeInViewport()
 })
 
-test('with the API blocked the shell still loads and navigates', async ({ page }) => {
+test('real network: with the API blocked the shell still loads and navigates', async ({ page }) => {
   await page.route('**/challenge.outsera.tech/**', (route) => route.abort())
 
   await page.goto('/')
