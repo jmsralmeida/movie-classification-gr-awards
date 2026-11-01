@@ -6,6 +6,7 @@ import { getPanelStatus } from '../../../shared/ui/Panel/panelStatus'
 import { useWinnersByYear } from '../api/useDashboardQueries'
 import type { WinningMovie } from '../model/dashboard.types'
 import { parseYear, YEAR_PARAM } from '../model/year'
+import { WinnersSearchForm } from './WinnersSearchForm'
 
 const columns: Column<WinningMovie>[] = [
   { id: 'id', header: 'Id', render: (row) => row.id },
@@ -30,6 +31,7 @@ export function WinnersByYearPanel() {
       status={status}
       emptyMessage={`No winners found for ${year ?? ''}.`}
       onRetry={() => void query.refetch()}
+      controls={<WinnersSearchForm key={year ?? ''} year={year} />}
     >
       <DataTable
         caption={TABLE_CAPTION}
