@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { StudioWinCount } from '../model/dashboard.types'
 import { selectTopStudios } from '../model/mappers'
-import { fetchStudios, fetchYearsWithMultipleWinners } from './dashboardApi'
+import { fetchProducerIntervals, fetchStudios, fetchYearsWithMultipleWinners } from './dashboardApi'
 import { dashboardKeys } from './dashboardKeys'
 
 export function useYearsWithMultipleWinners() {
@@ -21,5 +21,12 @@ export function useTopStudios() {
     queryKey: dashboardKeys.studios,
     queryFn: ({ signal }) => fetchStudios(signal),
     select: selectTopThree,
+  })
+}
+
+export function useProducerIntervals() {
+  return useQuery({
+    queryKey: dashboardKeys.producerIntervals,
+    queryFn: ({ signal }) => fetchProducerIntervals(signal),
   })
 }
