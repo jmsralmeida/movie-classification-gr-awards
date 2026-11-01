@@ -33,7 +33,7 @@ description: "Task list for Dashboard"
 
 **Purpose**: tokens e utilitário de estilo exigidos pelos componentes novos
 
-- [ ] T001 Em `src/shared/styles/tokens.css` acrescentar (valores estimados do anexo 1): `--color-surface` (#ffffff), `--color-border` (#dee2e6), `--color-table-header-bg` (#f8f9fa), `--color-error` (#b02a37), `--color-button-bg` (#0d6efd), `--color-button-text` (#ffffff), `--font-size-panel-title` (1.125rem), `--font-size-subtitle` (1rem), `--font-size-table` (0.875rem). Em `src/shared/styles/global.css` acrescentar a classe utilitária `.visually-hidden` (clip/1px/overflow hidden, padrão de "só leitor de tela"). Sem teste (só CSS); verificar com `npm run build`. Commit: `style(shared): add panel and table tokens and visually-hidden utility`.
+- [X] T001 Em `src/shared/styles/tokens.css` acrescentar (valores estimados do anexo 1): `--color-surface` (#ffffff), `--color-border` (#dee2e6), `--color-table-header-bg` (#f8f9fa), `--color-error` (#b02a37), `--color-button-bg` (#0d6efd), `--color-button-text` (#ffffff), `--font-size-panel-title` (1.125rem), `--font-size-subtitle` (1rem), `--font-size-table` (0.875rem). Em `src/shared/styles/global.css` acrescentar a classe utilitária `.visually-hidden` (clip/1px/overflow hidden, padrão de "só leitor de tela"). Sem teste (só CSS); verificar com `npm run build`. Commit: `style(shared): add panel and table tokens and visually-hidden utility`.
 
 ---
 
