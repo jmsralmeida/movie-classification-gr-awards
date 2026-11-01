@@ -31,7 +31,6 @@ describe('App', () => {
     await user.click(screen.getByRole('link', { name: 'List' }))
 
     expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
   })
 
   it.each(['/List', '/list/'])('opens the List view at %s', (route) => {

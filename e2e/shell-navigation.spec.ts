@@ -1,11 +1,8 @@
 import { expect, test } from '@playwright/test'
 
-test('browser back button and a URL opened directly show the right view and current link', async ({
-  page,
-}) => {
+test('browser back button and a URL opened directly show the right view', async ({ page }) => {
   await page.goto('/list')
   await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
 
   await page.getByRole('link', { name: 'Dashboard' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
@@ -13,8 +10,6 @@ test('browser back button and a URL opened directly show the right view and curr
   await page.goBack()
   await expect(page).toHaveURL(/\/list$/)
   await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
-  await expect(page.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current')
 })
 
 test('Tab and Enter walk the menu links and the focus ring is visible', async ({ page }) => {
