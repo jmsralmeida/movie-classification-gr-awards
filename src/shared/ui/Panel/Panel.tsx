@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import type { PanelProps } from './Panel.types'
+import { StatusMessage } from '../StatusMessage/StatusMessage'
 import styles from './Panel.module.css'
 
 export function Panel({ title, status, emptyMessage, onRetry, controls, children }: PanelProps) {
@@ -11,16 +12,9 @@ export function Panel({ title, status, emptyMessage, onRetry, controls, children
         {title}
       </h2>
       {controls}
-      {status === 'loading' && <p role="status">Loading…</p>}
-      {status === 'error' && (
-        <div className={styles.error}>
-          <p role="alert">Could not load this data.</p>
-          <button type="button" className={styles.button} onClick={onRetry}>
-            Try again
-          </button>
-        </div>
+      {status !== 'success' && (
+        <StatusMessage status={status} emptyMessage={emptyMessage} onRetry={onRetry} />
       )}
-      {status === 'empty' && <p>{emptyMessage}</p>}
       {status === 'success' && children}
     </section>
   )
