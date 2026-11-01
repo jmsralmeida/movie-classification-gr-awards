@@ -54,6 +54,9 @@ async function waitForRows(ids: number[]) {
   await waitFor(() => expect(firstCellsOf(bodyRows())).toEqual(ids))
 }
 
+const tableBody = () =>
+  within(screen.getByRole('table', { name: 'Movies' })).getAllByRole('rowgroup')[1]
+
 describe('ListPage', () => {
   beforeEach(() => {
     server.use(...listHandlers)
@@ -393,9 +396,6 @@ describe('ListPage', () => {
   })
 
   describe('loading and empty states', () => {
-    const tableBody = () =>
-      within(screen.getByRole('table', { name: 'Movies' })).getAllByRole('rowgroup')[1]
-
     it('shows "Loading…" in place of the rows, keeping the title and the filters, without pagination', () => {
       server.use(http.get(apiBaseUrl, async () => delay('infinite')))
       renderList()
@@ -534,7 +534,7 @@ describe('ListPage', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
 
-    it('leaves the error by changing a filter or the page, without "Try again"', async () => {
+    it('leaves the error by changing a filter, without "Try again"', async () => {
       const user = userEvent.setup()
       failRequests()
       renderList()
@@ -545,6 +545,51 @@ describe('ListPage', () => {
 
       await waitForRows([1, 11, 31])
       expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the pagination of the last known total in the error and leaves it by changing the page', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      failRequests()
+
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+
+      expect(await screen.findByRole('alert')).toBeVisible()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      )
+      expect(within(pagination).getByRole('button', { name: 'Page 3' })).toBeVisible()
+      server.use(...listHandlers)
+
+      await user.click(within(pagination).getByRole('button', { name: 'Page 3' }))
+
+      await waitForRows(range(31, 40))
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('keeps the pagination and "Try again" when a retry fails again with data in cache', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+      await waitForRows(range(16, 30))
+      failRequests()
+      await user.click(screen.getByRole('button', { name: 'Previous page' }))
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      retry.focus()
+
+      await user.keyboard('{Enter}')
+
+      await waitFor(() => expect(retry).not.toHaveAttribute('aria-disabled'))
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveFocus()
+      expect(screen.getByRole('alert')).toBeVisible()
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page')
     })
 
     it('keeps "Try again" mounted, inert and focused while the retry loads, then shows the rows', async () => {
@@ -561,9 +606,11 @@ describe('ListPage', () => {
       expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
       expect(retry).toHaveAttribute('aria-disabled', 'true')
       expect(retry).toHaveFocus()
+      expect(tableBody()).toHaveAttribute('aria-busy', 'true')
       expect(screen.queryByRole('status')).not.toBeInTheDocument()
       release()
       await waitForRows(range(1, 15))
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
       expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
     })
 
@@ -594,7 +641,7 @@ describe('ListPage', () => {
       expect(screen.getByRole('alert')).toBeVisible()
     })
 
-    it('moves the focus to "Try again" when the next page fails after "Next page" was used', async () => {
+    it('keeps the focus on "Next page" when the next page fails, since the pagination stays mounted', async () => {
       const user = userEvent.setup()
       renderList()
       await waitForRows(range(1, 15))
@@ -603,8 +650,8 @@ describe('ListPage', () => {
 
       await user.keyboard('{Enter}')
 
-      const retry = await screen.findByRole('button', { name: 'Try again' })
-      await waitFor(() => expect(retry).toHaveFocus())
+      expect(await screen.findByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus()
     })
   })
 })

@@ -37,6 +37,7 @@ interface StatusMessageProps {
   status: 'loading' | 'error' | 'empty'
   emptyMessage: string
   onRetry: () => void
+  retrying?: boolean // botão segue montado, com aria-disabled e sem chamar onRetry
   retryRef?: Ref<HTMLButtonElement>
 }
 ```

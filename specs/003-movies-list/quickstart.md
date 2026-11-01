@@ -22,7 +22,7 @@ Pré-requisitos: Node >= 22, `npm ci`, features 001 e 002 na branch.
    - `/list?page=abc&year=99&winner=maybe` abre a página 1 sem filtros; na aba Network, nenhuma
      requisição leva esses valores; `/list?page=99` mostra o vazio com a paginação para voltar;
    - **Erro**: no DevTools, bloquear a URL `api/movies` e acionar "Next page"; aparece "Could not load
-     this data." com "Try again" e o foco vai para o botão; desbloquear e acionar o botão recupera a
+     this data." com "Try again" e a paginação continua visível, com o foco em "Next page"; desbloquear e acionar o botão recupera a
      mesma página e os mesmos filtros;
    - **Lentidão**: com throttling "Slow 3G", ao trocar de página a lista anterior fica esmaecida até a
      nova chegar; na primeira abertura aparece "Loading…" com os filtros visíveis;

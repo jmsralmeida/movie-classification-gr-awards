@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
 import { Pagination } from '../../../shared/ui/Pagination/Pagination'
 import { getPanelStatus } from '../../../shared/ui/Panel/panelStatus'
 import { StatusMessage } from '../../../shared/ui/StatusMessage/StatusMessage'
 import { DataTable } from '../../../shared/ui/DataTable/DataTable'
 import type { Column } from '../../../shared/ui/DataTable/DataTable.types'
+import { useLastKnownTotalPages } from '../api/useLastKnownTotalPages'
 import { useMovies } from '../api/useMovies'
 import type { Movie } from '../model/movies.types'
 import { WinnerFilter } from './WinnerFilter'
@@ -40,12 +40,9 @@ export function ListPage() {
     { isError: isErrored, isPending: movies.isPending },
     data?.movies.length === 0,
   )
-  const retryRef = useRef<HTMLButtonElement>(null)
-
-  // Se a falha desmontou o botão focado (ex.: "Next page"), o foco foi ao body: leva-o ao "Try again".
-  useEffect(() => {
-    if (status === 'error' && document.activeElement === document.body) retryRef.current?.focus()
-  }, [status])
+  const lastKnownTotalPages = useLastKnownTotalPages()
+  // No erro sem dado, a paginação usa o último total conhecido: trocar de página ou filtro segue possível.
+  const totalPages = data?.totalPages ?? (status === 'error' ? lastKnownTotalPages : undefined)
 
   return (
     <>
@@ -58,7 +55,7 @@ export function ListPage() {
             columns={columns}
             rows={data?.movies ?? []}
             getRowKey={(movie) => movie.id}
-            busy={movies.isPlaceholderData}
+            busy={movies.isPlaceholderData || isRetrying}
             statusRow={
               status === 'success' ? undefined : (
                 <StatusMessage
@@ -66,14 +63,13 @@ export function ListPage() {
                   emptyMessage="No movies found."
                   onRetry={() => void movies.refetch()}
                   retrying={isRetrying}
-                  retryRef={retryRef}
                 />
               )
             }
           />
         </div>
-        {data !== undefined && data.totalPages > 0 && (
-          <Pagination page={query.page} totalPages={data.totalPages} onPageChange={setPage} />
+        {totalPages !== undefined && totalPages > 0 && (
+          <Pagination page={query.page} totalPages={totalPages} onPageChange={setPage} />
         )}
       </div>
     </>

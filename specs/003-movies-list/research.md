@@ -85,11 +85,13 @@ Sem `NEEDS CLARIFICATION` aberto. Decisões técnicas e a verificação do contr
 - **Contexto**: ao acionar "Next page", se a nova consulta falha, não há `data` (o
   `keepPreviousData` só vale enquanto está pendente): a paginação some e o botão focado é
   desmontado, o que levaria o foco ao `body` (FR-020, US4-7).
-- **Decisão**: `StatusMessage` aceita `retryRef` (ref do botão "Try again"). `ListPage` roda um
-  `useEffect` ao entrar em `error`: se `document.activeElement` for `document.body`, foca o botão.
-  Também vale para falha na abertura da página (foco no "Try again" é aceitável).
-- **Racional**: efeito de foco é efeito colateral do DOM, não busca de dados (Art. IX permite).
-  Filtros não desmontam, então não perdem foco.
+- **Decisão (revisada após o code review)**: sem efeito. No erro a `Pagination` continua montada com o
+  último `totalPages` que o cache tem (`useLastKnownTotalPages`, lido do `QueryCache` no render, sem
+  estado espelho), então o botão focado não desmonta. "Try again" também não desmonta na nova
+  tentativa: a falha sem dado volta a `pending`, e `ListPage` mantém o erro (`errorUpdatedAt > 0`),
+  com `aria-disabled` no botão (`retrying` do `StatusMessage`) e `aria-busy` no `tbody`.
+- **Racional**: o efeito de foco original ficou sem caso real e saiu. Limitação: depois de mudar de
+  filtro e falhar sem dado para o filtro novo, o total vem do filtro anterior.
 - **Alternativas**: manter a paginação montada com o último `totalPages` (exigiria guardar estado
   do servidor fora do TanStack Query, proibido por Art. II); aceitar a perda de foco (viola FR-020).
 

@@ -38,7 +38,7 @@ mapper em `model/mappers.ts` antes de chegar à UI (Art. III). Referência:
 |----------|--------|---------------------|
 | Primeira consulta em andamento | `loading` | cabeçalho com filtros + linha "Loading…" (`role="status"`); sem paginação |
 | Consulta com a lista anterior em mãos (`isPlaceholderData`) | `success` | lista anterior, `aria-busy="true"` no `tbody` e linhas esmaecidas; paginação ativa |
-| Falha (rede, 4xx/5xx, formato) | `error` | cabeçalho com filtros + "Could not load this data." e "Try again"; sem paginação |
+| Falha (rede, 4xx/5xx, formato) | `error` | cabeçalho com filtros + "Could not load this data." e "Try again"; paginação com o último total conhecido do cache (some só se nada foi carregado ainda); durante a nova tentativa o botão fica `aria-disabled` e o `tbody` com `aria-busy` |
 | `movies` vazio | `empty` | cabeçalho com filtros + "No movies found."; paginação só se `totalPages > 0` |
 | Com filmes | `success` | linhas + paginação |
 

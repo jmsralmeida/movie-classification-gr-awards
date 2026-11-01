@@ -159,8 +159,9 @@ cada vez, e conferir o que aparece no lugar da tabela e se os filtros seguem uti
 5. **Given** o estado de erro, **When** o usuário aciona "Try again" e a API responde,
    **Then** a mesma consulta (mesma página e mesmos filtros) é repetida e a tabela
    passa a mostrar os dados.
-6. **Given** o estado de erro, **When** o usuário altera um filtro ou a página, **Then**
-   uma nova consulta é feita sem precisar acionar "Try again".
+6. **Given** o estado de erro, **When** o usuário altera um filtro ou a página (a paginação
+   segue visível, com o último total de páginas conhecido), **Then** uma nova consulta é feita
+   sem precisar acionar "Try again".
 7. **Given** o foco do teclado na paginação ou nos filtros, **When** a lista muda de
    estado, **Then** o foco não é perdido (o controle acionado continua focável).
 
