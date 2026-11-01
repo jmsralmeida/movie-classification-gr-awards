@@ -13,7 +13,7 @@ Sem `NEEDS CLARIFICATION` aberto. Decisões técnicas e a verificação do contr
 - **Alternativas**: uma tabela por painel (duplicação); biblioteca de tabela como TanStack Table (fora da stack, sem ordenação nem paginação nesta feature).
 
 ## R3. Validação do formato das respostas
-- **Decisão**: guards manuais em `src/shared/api/guards.ts` (`isRecord`, `expectArray`, `expectString`, `expectNumber`) lançando `ApiError('parse', 'Unexpected response shape')`; cada mapper em `model/mappers.ts` compõe os guards e devolve os tipos do domínio.
+- **Decisão**: guards manuais em `src/shared/api/guards.ts` (`isRecord`, `expectRecord`, `expectArray`, `expectString`, `expectNumber`) lançando `ApiError('parse', 'Unexpected response shape')`; cada mapper em `model/mappers.ts` compõe os guards e devolve os tipos do domínio.
 - **Racional**: respostas pequenas e estáveis; evita dependência. O erro vira o estado de erro do painel (FR-015).
 - **Alternativas**: zod/valibot (dependência fora da stack, ~13 kB gzip no zod, para 4 formatos simples); `as` direto no JSON (viola Art. III/V).
 - **Custo conhecido**: resposta malformada passa pela política de retry (1 tentativa extra) antes de mostrar o erro.
@@ -48,5 +48,5 @@ Verificado em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
 
 ## R9. Dados de teste
 - **Decisão**: `features/dashboard/testing/fixtures.ts` com dados derivados do OpenAPI e dos valores reais do anexo 1 (1986/1990/2015, Columbia/Paramount/Warner, Matthew Vaughn, Joel Silver); `handlers.ts` com os handlers MSW. O E2E importa as mesmas fixtures em `e2e/support/mockApi.ts` (`page.route`).
-- **Racional**: uma única fonte de dados para componente e E2E; o Playwright transpila TypeScript sozinho, e as fixtures não usam alias.
+- **Racional**: uma única fonte de dados para componente e E2E; o Playwright transpila TypeScript sozinho. O `e2e/` também é checado pelo `tsconfig.node.json` (`nodenext`, ESM, sem DOM), então o import em `e2e/support/mockApi.ts` leva a extensão (`fixtures.ts`) e `fixtures.ts` é só dado cru, sem imports nem alias.
 - **Alternativas**: fixtures duplicadas no E2E (divergem com o tempo); API real nos testes (flaky e proibido pelo setup).

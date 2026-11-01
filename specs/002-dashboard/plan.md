@@ -76,24 +76,23 @@ Verificadas em 2026-10-31 contra `https://challenge.outsera.tech/api/movies`:
 | FR-003 / FR-015 / SC-005: mappers devolvem os valores da API sem alterar contagens, ordem nem anos; formato inesperado (campo ausente, tipo errado, não-lista) lança `ApiError` `parse` | Unitário | `src/features/dashboard/model/mappers.test.ts` |
 | FR-005 / US1-2: no máximo 3 estúdios, na ordem da API; menos de 3 mostra os que existirem | Unitário | `src/features/dashboard/model/mappers.test.ts` (`selectTopStudios`) |
 | FR-008 / FR-010 / Edge: ano válido = 4 dígitos após `trim`; letras, decimal, negativo, vazio, 3 e 5 dígitos e `?year=abc` viram "sem ano" | Unitário | `src/features/dashboard/model/year.test.ts` |
-| Guards de formato (`isRecord`, `expectArray`, `expectString`, `expectNumber`) | Unitário | `src/shared/api/guards.test.ts` |
+| Guards de formato (`isRecord`, `expectRecord`, `expectArray`, `expectString`, `expectNumber`) | Unitário | `src/shared/api/guards.test.ts` |
 | FR-011 / FR-012 / FR-013 / FR-014 / US3: `Panel` mostra título sempre; carregando com `role="status"`; vazio com a mensagem recebida; erro com `role="alert"` e "Try again" que chama `onRetry`; sucesso mostra `children`; `controls` aparece em todos os estados | Componente | `src/shared/ui/Panel/Panel.test.tsx` |
 | `getPanelStatus` (erro tem prioridade; sem dado = carregando; lista vazia = vazio) | Unitário | `src/shared/ui/Panel/panelStatus.test.ts` |
-| FR-018 / Art. X: `DataTable` com `caption`, `th scope="col"`, uma linha por item com `key` estável, `emptyMessage` quando sem linhas, células só como texto (conteúdo com `<b>` aparece literal) | Componente | `src/shared/ui/DataTable/DataTable.test.tsx` |
+| FR-018 / Art. X: `DataTable` com `caption`, `th scope="col"`, uma linha por item com `key` estável, `emptyMessage` quando sem linhas, células só como texto (conteúdo com `<b>` e `&amp;` aparece literal; **único** teste de FR-016) | Componente | `src/shared/ui/DataTable/DataTable.test.tsx` |
 | FR-001 / FR-004 / US1-1: painel de anos com título e colunas "Year" e "Win Count", uma linha por ano | Componente (MSW) | `src/features/dashboard/ui/YearsPanel.test.tsx` |
 | FR-005 / US1-2: painel de estúdios com colunas "Name" e "Win Count", só os 3 primeiros da lista completa da API | Componente (MSW) | `src/features/dashboard/ui/StudiosPanel.test.tsx` |
-| FR-006 / US1-3 / US1-4: tabelas "Maximum" e "Minimum" com 4 colunas; empates listados; só uma tabela vazia mostra a mensagem dela e o painel segue em sucesso; ambas vazias = estado de vazio do painel | Componente (MSW) | `src/features/dashboard/ui/ProducersPanel.test.tsx` |
+| FR-006 / US1-3 / US1-4: tabelas "Maximum" e "Minimum" com 4 colunas; empates listados; só uma tabela vazia mostra a mensagem dela e o painel segue em sucesso | Componente (MSW) | `src/features/dashboard/ui/ProducersPanel.test.tsx` |
 | FR-007 / FR-009 / US2-1: antes de buscar, campo "Search by year", botão "Search", tabela só com cabeçalho e instrução, e nenhuma chamada a `winnersByYear` | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
 | US2-2 / US2-3 / FR-007: buscar por clique e por Enter chama `winnersByYear?year=` e lista todos os vencedores (Id, Year, Title) | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
 | US2-4 / US2-5 / FR-010: nova busca troca a tabela e o `?year=`; renderizar com `?year=` preenche o campo e a tabela; `?year=abc` = sem busca | Componente (MSW + `MemoryRouter`) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
+| Edge: duplo clique rápido em "Search" gera uma única consulta; buscar A e depois B mostra B | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
 | US2-6 / FR-008: campo vazio ou inválido mostra mensagem ligada ao campo (`aria-invalid`, `aria-describedby`), sem requisição; digitar de novo e buscar válido limpa a mensagem | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
-| Edge: ano sem vencedores (`200 []`) mostra o vazio "No winners found for 1800", diferente do estado inicial | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
 | US3-5: erro na busca mantém campo e ano digitado, e "Try again" repete a mesma consulta | Componente (MSW) | `src/features/dashboard/ui/WinnersByYearPanel.test.tsx` |
-| FR-011 / US3-1..4 / SC-003 / SC-004: com um endpoint lento, vazio ou falhando (um por vez, nos 4 painéis), só aquele painel muda de estado; "Try again" refaz só a requisição dele e os outros não são pedidos de novo | Componente (MSW) | `src/features/dashboard/ui/DashboardPage.test.tsx` |
-| FR-016 / Edge: título e nomes com `<img onerror>` ou `&amp;` aparecem como texto literal | Componente (MSW) | `src/features/dashboard/ui/StudiosPanel.test.tsx` |
+| FR-011 / US3-1..4 / SC-003 / SC-004: com um endpoint lento, vazio ou falhando (um por vez, nos 4 painéis), só aquele painel muda de estado (inclui o vazio de cada painel: produtores com `max` e `min` vazios; busca com `[]`, que mostra "No winners found for {year}" e difere do estado inicial); "Try again" refaz só a requisição dele e os outros não são pedidos de novo | Componente (MSW) | `src/features/dashboard/ui/DashboardPage.test.tsx` |
 | Impacto na 001: o app abre o Dashboard na raiz com as quatro respostas mockadas | Componente | `src/app/App.test.tsx` (ajuste, ver "Impactos") |
 | US2-5 / FR-010 / Art. II: URL com `?year=`, recarregar e botão voltar restauram a busca em navegador real | E2E | `e2e/dashboard.spec.ts` — "year search: URL, reload and back restore the table (router + history + query)" |
-| US4-1 / US4-2 / FR-017 / SC-006: duas colunas em 1440x900, uma coluna e sem rolagem horizontal em 768x1280, quatro painéis visíveis (CSS real) | E2E | `e2e/dashboard.spec.ts` — "real CSS layout: two columns at 1440, one column without horizontal scroll at 768" |
+| US4-1 / US4-2 / FR-017 / SC-006: duas colunas em 1440x900, uma coluna e sem rolagem horizontal em 768x1280, quatro painéis visíveis; nome de estúdio longo sem espaços não estoura o cartão em 768 (CSS real) | E2E | `e2e/dashboard.spec.ts` — "real CSS layout: two columns at 1440, one column without horizontal scroll at 768" |
 | US4-3 / FR-018 / SC-007: Tab chega ao campo e ao botão com anel de foco visível (CSS real) | E2E | `e2e/dashboard.spec.ts` — "real CSS: the search field and button show a focus ring when reached with Tab" |
 | FR-019: textos em inglês | Revisão de código (sem teste dedicado) | n/a |
 | SC-001: dados em até 2 s | Verificação manual (`quickstart.md`) | n/a |
@@ -146,7 +145,7 @@ src/
 │       └── *.module.css
 └── shared/
     ├── api/
-    │   ├── guards.ts                     # isRecord, expectArray, expectString, expectNumber (+ guards.test.ts)
+    │   ├── guards.ts                     # isRecord, expectRecord, expectArray, expectString, expectNumber (+ guards.test.ts)
     │   └── apiError.ts                   # (inalterado; mappers lançam ApiError('parse', ...))
     ├── styles/
     │   ├── tokens.css                    # + cor de superfície, borda, cabeçalho de tabela, erro, botão, tamanhos
@@ -156,7 +155,7 @@ src/
         └── DataTable/{DataTable.tsx, DataTable.types.ts, DataTable.module.css, DataTable.test.tsx}
 e2e/
 ├── dashboard.spec.ts
-└── support/mockApi.ts                    # page.route com as fixtures de features/dashboard/testing
+└── support/mockApi.ts                    # page.route com as fixtures de features/dashboard/testing (import com extensão `.ts`; `fixtures.ts` sem imports, ver R9)
 ```
 
 **Structure Decision**: mesma SPA da 001. A feature ganha `api/`, `model/` e `ui/`; o que é
