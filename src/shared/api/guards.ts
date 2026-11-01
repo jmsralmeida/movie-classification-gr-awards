@@ -29,3 +29,8 @@ export function expectNumber(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw unexpectedShape()
   return value
 }
+
+export function expectBoolean(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw unexpectedShape()
+  return value
+}
