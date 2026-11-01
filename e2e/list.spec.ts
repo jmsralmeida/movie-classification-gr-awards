@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { respondToMoviesQuery } from '../src/features/list/testing/fixtures.ts'
 import { mockListApi } from './support/mockApi.ts'
 
 test('list request: year and winner filters reach the API as query params (UI + http client + query key)', async ({
@@ -60,4 +61,69 @@ test('list URL: filters and page survive reload and back (router + history + que
   await page.goForward()
   await expect(page).toHaveURL(/year=1981/)
   await expect(yearField).toHaveValue('1981')
+})
+
+test('real CSS layout: filters in the header, full pagination and no horizontal scroll at 768 and 1440', async ({
+  page,
+}) => {
+  const LONG_TITLE = 'A'.repeat(80)
+  const isTablet = (page.viewportSize()?.width ?? 0) <= 768
+  await mockListApi(page)
+  if (isTablet) {
+    // Sobrescreve a rota (a última registrada vence) com um título longo e sem espaços.
+    await page.route(/\/api\/movies(\?.*)?$/, async (route) => {
+      const { status, body } = respondToMoviesQuery(new URL(route.request().url()).searchParams)
+      const content = (body as { content: { title: string }[] }).content
+      if (content[0] !== undefined) content[0].title = LONG_TITLE
+      return route.fulfill({ status, json: body })
+    })
+  }
+
+  await page.goto('/list')
+
+  await expect(page.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
+  await expect(page.getByRole('row')).toHaveCount(16)
+
+  const headers = page.getByRole('columnheader')
+  const controls = [
+    [headers.nth(1), page.getByRole('textbox', { name: 'Filter by year' })],
+    [headers.nth(3), page.getByRole('combobox', { name: 'Filter by winner' })],
+  ] as const
+  for (const [header, control] of controls) {
+    await expect(control).toBeVisible()
+    const headerBox = await header.boundingBox()
+    const controlBox = await control.boundingBox()
+    expect(headerBox).not.toBeNull()
+    expect(controlBox).not.toBeNull()
+    expect(controlBox!.x).toBeGreaterThanOrEqual(headerBox!.x)
+    expect(controlBox!.y).toBeGreaterThanOrEqual(headerBox!.y)
+    expect(controlBox!.x + controlBox!.width).toBeLessThanOrEqual(headerBox!.x + headerBox!.width)
+    expect(controlBox!.y + controlBox!.height).toBeLessThanOrEqual(headerBox!.y + headerBox!.height)
+  }
+
+  const pagination = page.getByRole('navigation', { name: 'Pagination' })
+  const buttons = [
+    pagination.getByRole('button', { name: 'First page' }),
+    pagination.getByRole('button', { name: 'Page 1' }),
+    pagination.getByRole('button', { name: 'Last page' }),
+  ]
+  const tops: (number | undefined)[] = []
+  for (const button of buttons) {
+    await expect(button).toBeVisible()
+    tops.push((await button.boundingBox())?.y)
+  }
+  expect(new Set(tops).size).toBe(1)
+
+  const hasHorizontalScroll = await page
+    .locator('html')
+    .evaluate((root) => root.scrollWidth > root.clientWidth)
+  expect(hasHorizontalScroll).toBe(false)
+
+  if (isTablet) {
+    const titleCell = page.getByRole('cell', { name: LONG_TITLE })
+    await expect(titleCell).toBeVisible()
+    const tableBox = await page.getByRole('table', { name: 'Movies' }).boundingBox()
+    const cellBox = await titleCell.boundingBox()
+    expect(cellBox!.x + cellBox!.width).toBeLessThanOrEqual(tableBox!.x + tableBox!.width)
+  }
 })
