@@ -21,7 +21,8 @@ getPageWindow(page: number, totalPages: number, size?: number): number[]  // siz
 - `<nav aria-label="Pagination">` com `<ul>` de botões, nesta ordem: "First page", "Previous page",
   números ("Page N", texto visível `N`), "Next page", "Last page".
 - A página atual tem `aria-current="page"`; se `page > totalPages`, nenhuma tem.
-- Sem destino: First/Previous com `page <= 1`; Next/Last com `page >= totalPages`. Esses botões
+- Sem destino: First com `page <= 1`; Previous com `page <= 1`; Next com `page >= totalPages`; Last só
+  com `page === totalPages` (além do total ainda leva de volta a uma página válida). Esses botões
   recebem `aria-disabled="true"` (nunca o atributo `disabled`), continuam focáveis e ignoram o clique
   (`onPageChange` não é chamado). Assim o foco não se perde ao chegar na primeira ou na última página.
 - Destinos: First = 1; Last = `totalPages`; Previous = `min(page - 1, totalPages)`; Next = `page + 1`.
