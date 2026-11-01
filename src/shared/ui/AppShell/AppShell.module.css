@@ -1,0 +1,44 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--menu-width) minmax(0, 1fr);
+  grid-template-rows: var(--header-height) 1fr;
+  grid-template-areas:
+    'header header'
+    'menu content';
+  min-height: 100vh;
+}
+
+.header {
+  grid-area: header;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  font-size: var(--font-size-header);
+}
+
+.menu {
+  grid-area: menu;
+  position: sticky;
+  top: var(--header-height);
+  align-self: start;
+  height: calc(100vh - var(--header-height));
+  padding: var(--space-3);
+  background: var(--color-menu-bg);
+}
+
+.content {
+  grid-area: content;
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--color-content-bg);
+}
+
+.content h1 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-title);
+}

@@ -1,0 +1,21 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: var(--space-1) 0;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.current {
+  color: var(--color-link-current);
+  font-weight: var(--font-weight-current);
+}

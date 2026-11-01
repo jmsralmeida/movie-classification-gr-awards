@@ -23,6 +23,10 @@ quando os dois plugins publicarem suporte à 10.
 
 ## Playwright
 
-Instalado com config mínima. Viewports (768x1280 e 1440x900), fixtures e mocks entram na primeira
-feature com jornada E2E. `test:e2e` usa `--pass-with-no-tests` enquanto `e2e/` estiver vazio.
-No CI, será preciso `npx playwright install --with-deps chromium`.
+Config em `playwright.config.ts` com dois projetos: `desktop-1440` (1440x900) e `tablet-768`
+(768x1280), conforme o Art. VII. O `webServer` sobe o `npm run dev` na porta 5173; localmente
+reaproveita um servidor já aberto. As jornadas ficam em `e2e/` e bloqueiam só o host real da API,
+sem depender da rede. `test:e2e` roda `playwright test` (sem `--pass-with-no-tests`, pois já há
+jornada). No CI, o job instala o navegador com `npx playwright install --with-deps chromium` e
+roda `npm run test:e2e` depois do build. Localmente, na primeira vez, rode
+`npx playwright install chromium`.

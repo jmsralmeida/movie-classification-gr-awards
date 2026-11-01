@@ -39,12 +39,12 @@ Mantenha esta seção atualizada quando os scripts mudarem.
 - `npm test`: Vitest (uma execução)
 - `npm run test:watch`: Vitest em modo watch
 - `npm run test:coverage`: cobertura (v8)
-- `npm run test:e2e`: Playwright (config mínima em `playwright.config.ts`; `e2e/` ainda sem testes)
+- `npm run test:e2e`: Playwright (config em `playwright.config.ts`, jornadas em `e2e/`; sobe o `npm run dev` sozinho e roda em 1440x900 e 768x1280)
 - `npm run format` / `npm run format:check`: Prettier
 
 Antes de dizer que algo está pronto: `npm run lint && npm run typecheck && npm test`.
-O CI (`.github/workflows/ci.yml`) roda format:check, lint, typecheck, test e build em push e PR.
-O `test:e2e` entra no CI quando existir a primeira jornada E2E (Art. VI da constitution).
+O CI (`.github/workflows/ci.yml`) roda format:check, lint, typecheck, test, build e test:e2e em push e PR.
+O CI também instala o Chromium (`npx playwright install --with-deps chromium`) e roda `test:e2e` depois do build (Art. VI da constitution).
 
 Testes: `src/test/` tem o servidor MSW (`server.ts`, `handlers.ts`), o `setup.ts` (requisição
 sem handler falha o teste) e `renderWithProviders`. ESLint está fixado na 9.x porque
