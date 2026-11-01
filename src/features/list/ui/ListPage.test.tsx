@@ -395,6 +395,22 @@ describe('ListPage', () => {
     })
   })
 
+  describe('invalid URL parameters', () => {
+    it('opens with the defaults and never sends an invalid page, year or winner to the API', async () => {
+      const requests = recordRequests()
+      renderList('/list?page=0&year=99&winner=maybe')
+
+      await waitForRows(range(1, 15))
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('')
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('')
+      expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page')
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.get('page')).toBe('0')
+      expect(requests[0]?.has('year')).toBe(false)
+      expect(requests[0]?.has('winner')).toBe(false)
+    })
+  })
+
   describe('loading and empty states', () => {
     it('shows "Loading…" in place of the rows, keeping the title and the filters, without pagination', () => {
       server.use(http.get(apiBaseUrl, async () => delay('infinite')))
