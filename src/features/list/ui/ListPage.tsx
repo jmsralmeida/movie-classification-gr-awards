@@ -1,3 +1,4 @@
+import { Pagination } from '../../../shared/ui/Pagination/Pagination'
 import { DataTable } from '../../../shared/ui/DataTable/DataTable'
 import type { Column } from '../../../shared/ui/DataTable/DataTable.types'
 import { useMovies } from '../api/useMovies'
@@ -13,7 +14,7 @@ const columns: Column<Movie>[] = [
 ]
 
 export function ListPage() {
-  const { query } = useListParams()
+  const { query, setPage } = useListParams()
   const { data } = useMovies(query)
 
   return (
@@ -26,6 +27,9 @@ export function ListPage() {
           rows={data?.movies ?? []}
           getRowKey={(movie) => movie.id}
         />
+        {data !== undefined && data.totalPages > 0 && (
+          <Pagination page={query.page} totalPages={data.totalPages} onPageChange={setPage} />
+        )}
       </div>
     </>
   )
