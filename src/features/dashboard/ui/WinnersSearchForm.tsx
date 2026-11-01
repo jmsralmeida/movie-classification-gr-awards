@@ -4,7 +4,7 @@ import { parseYear, YEAR_PARAM } from '../model/year'
 import styles from './WinnersSearchForm.module.css'
 
 interface WinnersSearchFormProps {
-  // Ano da URL; o pai usa este mesmo valor como `key` para restaurar o campo.
+  // Ano da URL; quando muda (busca, voltar/avançar), o campo passa a mostrá-lo.
   year: string | undefined
 }
 
@@ -13,8 +13,16 @@ const INVALID_YEAR_MESSAGE = 'Enter a 4-digit year.'
 export function WinnersSearchForm({ year }: WinnersSearchFormProps) {
   const [, setSearchParams] = useSearchParams()
   const [hasError, setHasError] = useState(false)
+  const [draft, setDraft] = useState(year ?? '')
+  const [syncedYear, setSyncedYear] = useState(year)
   const inputId = useId()
   const errorId = useId()
+
+  // Ajuste de estado no render (sem useEffect nem `key`): o form não remonta, então o foco fica.
+  if (year !== syncedYear) {
+    setSyncedYear(year)
+    setDraft(year ?? '')
+  }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -42,7 +50,8 @@ export function WinnersSearchForm({ year }: WinnersSearchFormProps) {
           inputMode="numeric"
           name={YEAR_PARAM}
           placeholder="Search by year"
-          defaultValue={year ?? ''}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
           aria-invalid={hasError ? true : undefined}
           aria-describedby={hasError ? errorId : undefined}
         />

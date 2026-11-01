@@ -110,6 +110,23 @@ describe('WinnersByYearPanel', () => {
       expect(requestedYears).toEqual(['1990'])
     })
 
+    it.each(['click', 'enter'] as const)(
+      'keeps focus where the user was after a valid search by %s',
+      async (how) => {
+        const user = userEvent.setup()
+        renderWithProviders(<WinnersByYearPanel />)
+
+        await search(user, '1990', how)
+        await screen.findByRole('cell', { name: 'First Winner' })
+
+        const target =
+          how === 'enter'
+            ? screen.getByRole('textbox', { name: 'Search by year' })
+            : screen.getByRole('button', { name: 'Search' })
+        expect(target).toHaveFocus()
+      },
+    )
+
     it('swaps the table when a new year is searched', async () => {
       const user = userEvent.setup()
       renderWithProviders(<WinnersByYearPanel />)

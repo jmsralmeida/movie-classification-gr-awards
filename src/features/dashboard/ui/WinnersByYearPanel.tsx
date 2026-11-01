@@ -31,7 +31,7 @@ export function WinnersByYearPanel() {
       status={status}
       emptyMessage={`No winners found for ${year ?? ''}.`}
       onRetry={() => void query.refetch()}
-      controls={<WinnersSearchForm key={year ?? ''} year={year} />}
+      controls={<WinnersSearchForm year={year} />}
     >
       <DataTable
         caption={TABLE_CAPTION}
