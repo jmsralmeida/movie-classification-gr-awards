@@ -17,4 +17,5 @@
 
 .current {
   color: var(--color-link-current);
+  font-weight: var(--font-weight-current);
 }
