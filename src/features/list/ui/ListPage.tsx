@@ -32,7 +32,14 @@ export function ListPage() {
   const { query, setPage } = useListParams()
   const movies = useMovies(query)
   const { data } = movies
-  const status = getPanelStatus(movies, data?.movies.length === 0)
+  // Uma nova tentativa depois de falha volta a `pending` (sem dado em cache): continua no erro,
+  // com o botão montado, para o foco não se perder.
+  const isErrored = movies.isError || (movies.isPending && movies.errorUpdatedAt > 0)
+  const isRetrying = isErrored && movies.isFetching
+  const status = getPanelStatus(
+    { isError: isErrored, isPending: movies.isPending },
+    data?.movies.length === 0,
+  )
   const retryRef = useRef<HTMLButtonElement>(null)
 
   // Se a falha desmontou o botão focado (ex.: "Next page"), o foco foi ao body: leva-o ao "Try again".
@@ -58,6 +65,7 @@ export function ListPage() {
                   status={status}
                   emptyMessage="No movies found."
                   onRetry={() => void movies.refetch()}
+                  retrying={isRetrying}
                   retryRef={retryRef}
                 />
               )

@@ -18,3 +18,8 @@
   border: 0;
   cursor: pointer;
 }
+
+.button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: var(--opacity-busy);
+}

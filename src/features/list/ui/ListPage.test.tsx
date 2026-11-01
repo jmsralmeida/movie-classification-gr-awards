@@ -547,6 +547,53 @@ describe('ListPage', () => {
       expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
     })
 
+    it('keeps "Try again" mounted, inert and focused while the retry loads, then shows the rows', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList()
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      await user.click(retry)
+      await waitFor(() => expect(retry).toHaveFocus())
+      const release = holdResponses()
+
+      await user.click(retry)
+
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveAttribute('aria-disabled', 'true')
+      expect(retry).toHaveFocus()
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      release()
+      await waitForRows(range(1, 15))
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the focus on "Try again" when the retry fails again', async () => {
+      const user = userEvent.setup()
+      let release: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      failRequests()
+      renderList()
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      retry.focus()
+      server.use(
+        http.get(apiBaseUrl, async () => {
+          await gate
+          return HttpResponse.json({ message: 'boom' }, { status: 500 })
+        }),
+      )
+
+      await user.keyboard('{Enter}')
+      expect(retry).toHaveAttribute('aria-disabled', 'true')
+      release()
+
+      await waitFor(() => expect(retry).not.toHaveAttribute('aria-disabled'))
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveFocus()
+      expect(screen.getByRole('alert')).toBeVisible()
+    })
+
     it('moves the focus to "Try again" when the next page fails after "Next page" was used', async () => {
       const user = userEvent.setup()
       renderList()

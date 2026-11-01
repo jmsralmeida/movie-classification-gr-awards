@@ -28,6 +28,18 @@ describe('StatusMessage', () => {
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
 
+  it('keeps "Try again" focusable but inert while retrying', async () => {
+    const user = userEvent.setup()
+    const { onRetry } = renderMessage({ status: 'error', retrying: true })
+    const button = screen.getByRole('button', { name: 'Try again' })
+
+    await user.click(button)
+
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).toHaveFocus()
+    expect(onRetry).not.toHaveBeenCalled()
+  })
+
   it('points retryRef at the "Try again" button', () => {
     const retryRef = createRef<HTMLButtonElement>()
     renderMessage({ status: 'error', retryRef })
