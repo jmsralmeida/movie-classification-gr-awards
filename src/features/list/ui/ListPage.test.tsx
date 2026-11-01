@@ -518,6 +518,22 @@ describe('ListPage', () => {
       expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
     })
 
+    it.each([
+      ['a body without content', {}],
+      [
+        'a movie without a boolean winner',
+        { content: [{ id: 1, year: 1980, title: 'X' }], totalPages: 1 },
+      ],
+    ])('turns %s into the error state and renders nothing partially', async (_name, body) => {
+      server.use(http.get(apiBaseUrl, () => HttpResponse.json(body)))
+      renderList()
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Could not load this data.')
+      expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.queryByRole('cell', { name: 'X' })).not.toBeInTheDocument()
+      expect(bodyRows()).toHaveLength(1)
+    })
+
     it('repeats the same query (same page and filters) on "Try again"', async () => {
       const user = userEvent.setup()
       failRequests()
