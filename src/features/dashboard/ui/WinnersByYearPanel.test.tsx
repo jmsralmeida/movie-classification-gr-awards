@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { apiBaseUrl } from '../../../shared/api/config'
 import { renderWithProviders } from '../../../test/render'
 import { server } from '../../../test/server'
-import { winnersWithTiesResponse } from '../testing/fixtures'
+import { winnersByYear2018Response, winnersWithTiesResponse } from '../testing/fixtures'
 import { dashboardHandlers } from '../testing/handlers'
 import { WinnersByYearPanel } from './WinnersByYearPanel'
 
@@ -197,5 +197,31 @@ describe('WinnersByYearPanel', () => {
       expect(await screen.findByRole('cell', { name: 'First Winner' })).toBeInTheDocument()
       expect(screen.queryByText('No winners found for 2018.')).not.toBeInTheDocument()
     })
+  })
+
+  it('keeps the field and the typed year on error and retries the same year', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get(`${apiBaseUrl}/winnersByYear`, ({ request }) => {
+        requestedYears.push(new URL(request.url).searchParams.get('year'))
+        return new HttpResponse(null, { status: 500 })
+      }),
+    )
+    renderWithProviders(<WinnersByYearPanel />, { route: '/dashboard?year=2018' })
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load this data.')
+    expect(screen.getByRole('textbox', { name: 'Search by year' })).toHaveValue('2018')
+
+    server.use(
+      http.get(`${apiBaseUrl}/winnersByYear`, ({ request }) => {
+        requestedYears.push(new URL(request.url).searchParams.get('year'))
+        return HttpResponse.json(winnersByYear2018Response)
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByRole('cell', { name: 'Holmes & Watson' })).toBeInTheDocument()
+    expect(requestedYears).toEqual(['2018', '2018'])
+    expect(screen.getByRole('textbox', { name: 'Search by year' })).toHaveValue('2018')
   })
 })
