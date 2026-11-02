@@ -5,7 +5,8 @@ import { Panel } from '../../../shared/ui/Panel/Panel'
 import { getPanelStatus } from '../../../shared/ui/Panel/panelStatus'
 import { useWinnersByYear } from '../api/useDashboardQueries'
 import type { WinningMovie } from '../model/dashboard.types'
-import { parseYear, YEAR_PARAM } from '../model/year'
+import { parseYear } from '../../../shared/lib/year'
+import { YEAR_PARAM } from '../model/year'
 import { WinnersSearchForm } from './WinnersSearchForm'
 
 const columns: Column<WinningMovie>[] = [

@@ -1,0 +1,720 @@
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { delay, http, HttpResponse, type JsonBodyType } from 'msw'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { apiBaseUrl } from '../../../shared/api/config'
+import { renderWithProviders } from '../../../test/render'
+import { server } from '../../../test/server'
+import { moviesKeys } from '../api/moviesKeys'
+import { respondToMoviesQuery } from '../testing/fixtures'
+import { listHandlers } from '../testing/handlers'
+import { ListPage } from './ListPage'
+
+// Responde como a API e guarda os parâmetros de cada requisição.
+function recordRequests() {
+  const requests: URLSearchParams[] = []
+  server.use(
+    http.get(apiBaseUrl, ({ request }) => {
+      const params = new URL(request.url).searchParams
+      requests.push(params)
+      const { status, body } = respondToMoviesQuery(params)
+      return HttpResponse.json(body as JsonBodyType, { status })
+    }),
+  )
+  return requests
+}
+
+// Segura a resposta da API até o teste liberá-la (sem atraso fixo).
+function holdResponses() {
+  let release: () => void = () => {}
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  server.use(
+    http.get(apiBaseUrl, async ({ request }) => {
+      await gate
+      const { status, body } = respondToMoviesQuery(new URL(request.url).searchParams)
+      return HttpResponse.json(body as JsonBodyType, { status })
+    }),
+  )
+  return release
+}
+
+function renderList(route = '/list') {
+  return renderWithProviders(<ListPage />, { route })
+}
+
+const bodyRows = () => screen.getAllByRole('row').slice(1)
+const firstCellsOf = (rows: HTMLElement[]) =>
+  rows.map((row) => Number(within(row).getAllByRole('cell')[0]?.textContent))
+const range = (from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, index) => from + index)
+
+async function waitForRows(ids: number[]) {
+  await waitFor(() => expect(firstCellsOf(bodyRows())).toEqual(ids))
+}
+
+const tableBody = () =>
+  within(screen.getByRole('table', { name: 'Movies' })).getAllByRole('rowgroup')[1]
+
+describe('ListPage', () => {
+  beforeEach(() => {
+    server.use(...listHandlers)
+  })
+
+  it('shows the title, the table headers and the first page of movies in order', async () => {
+    const requests = recordRequests()
+    renderList()
+
+    expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
+    const table = screen.getByRole('table', { name: 'Movies' })
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        // Só o texto do próprio título (os filtros também ficam dentro do th).
+        .map((header) => header.firstChild?.textContent),
+    ).toEqual(['ID', 'Year', 'Title', 'Winner?'])
+
+    expect(await screen.findByRole('cell', { name: "Can't Stop the Music" })).toBeInTheDocument()
+    const rows = bodyRows()
+    expect(rows).toHaveLength(15)
+    expect(rows.map((row) => within(row).getAllByRole('cell')[0]?.textContent)).toEqual(
+      Array.from({ length: 15 }, (_, index) => String(index + 1)),
+    )
+    expect(within(rows[0] as HTMLElement).getAllByRole('cell')[3]).toHaveTextContent('Yes')
+    expect(within(rows[1] as HTMLElement).getByRole('cell', { name: 'Cruising' })).toBeVisible()
+    expect(within(rows[1] as HTMLElement).getAllByRole('cell')[3]).toHaveTextContent('No')
+
+    expect(requests).toHaveLength(1)
+    const [params] = requests
+    expect(params?.get('page')).toBe('0')
+    expect(params?.get('size')).toBe('15')
+    expect(params?.has('year')).toBe(false)
+    expect(params?.has('winner')).toBe(false)
+  })
+
+  describe('pagination', () => {
+    it('goes to the next page and sends the matching page to the API', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+
+      await waitForRows(range(16, 30))
+      expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page')
+      expect(requests.at(-1)?.get('page')).toBe('1')
+    })
+
+    it('goes to the previous, first and last page and to a numbered page', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?page=2')
+      await waitForRows(range(16, 30))
+
+      await user.click(screen.getByRole('button', { name: 'Previous page' }))
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.get('page')).toBe('0')
+
+      await user.click(screen.getByRole('button', { name: 'Last page' }))
+      await waitForRows(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+      expect(requests.at(-1)?.get('page')).toBe('2')
+
+      await user.click(screen.getByRole('button', { name: 'First page' }))
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.get('page')).toBe('0')
+
+      await user.click(screen.getByRole('button', { name: 'Page 3' }))
+      await waitForRows(range(31, 40))
+      expect(requests.at(-1)?.get('page')).toBe('2')
+    })
+
+    it('keeps keyboard focus on "Next page" while the next page loads and after it arrives', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      const next = screen.getByRole('button', { name: 'Next page' })
+      next.focus()
+      const release = holdResponses()
+
+      await user.keyboard('{Enter}')
+
+      expect(next).toHaveFocus()
+      expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
+      release()
+      await waitForRows(range(16, 30))
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus()
+    })
+
+    it('keeps the focus on the button that becomes unavailable at the last and first page', async () => {
+      const user = userEvent.setup()
+      renderList('/list?page=2')
+      await waitForRows(range(16, 30))
+
+      const next = screen.getByRole('button', { name: 'Next page' })
+      next.focus()
+      await user.keyboard('{Enter}')
+      await waitForRows(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus()
+
+      const previous = screen.getByRole('button', { name: 'Previous page' })
+      previous.focus()
+      await user.keyboard('{Enter}')
+      await waitForRows(range(16, 30))
+      await user.keyboard('{Enter}')
+      await waitForRows(range(1, 15))
+      expect(screen.getByRole('button', { name: 'Previous page' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+      expect(screen.getByRole('button', { name: 'Previous page' })).toHaveFocus()
+    })
+  })
+
+  describe('winner filter', () => {
+    const winnerSelect = () => screen.getByRole('combobox', { name: 'Filter by winner' })
+    const winnerCells = () =>
+      bodyRows().map((row) => within(row).getAllByRole('cell')[3]?.textContent)
+
+    it('offers Yes/No, Yes and No, with Yes/No selected by default', () => {
+      renderList()
+
+      expect(
+        within(winnerSelect())
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['Yes/No', 'Yes', 'No'])
+      expect(screen.getByRole('option', { name: 'Yes/No', selected: true })).toBeInTheDocument()
+    })
+
+    it('shows only winners when "Yes" is chosen', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.selectOptions(winnerSelect(), 'Yes')
+
+      await waitForRows([1, 11, 31])
+      expect(winnerCells()).toEqual(['Yes', 'Yes', 'Yes'])
+      expect(requests.at(-1)?.get('winner')).toBe('true')
+    })
+
+    it('shows only non-winners when "No" is chosen, with the pagination of the filtered total', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(requests.at(-1)?.get('winner')).toBe('false'))
+      await waitFor(() => expect(winnerCells()).toEqual(Array(15).fill('No')))
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 3' })).toBeInTheDocument()
+      expect(within(pagination).queryByRole('button', { name: 'Page 4' })).not.toBeInTheDocument()
+    })
+
+    it('goes back to page 1 when the filter changes while on page 3', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?page=3')
+      await waitForRows(range(31, 40))
+
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(requests.at(-1)?.get('winner')).toBe('false'))
+      expect(requests.at(-1)?.get('page')).toBe('0')
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+          'aria-current',
+          'page',
+        ),
+      )
+    })
+
+    it('removes the winner parameter when it goes back to Yes/No', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?winner=true')
+      await waitForRows([1, 11, 31])
+
+      await user.selectOptions(winnerSelect(), 'Yes/No')
+
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.has('winner')).toBe(false)
+    })
+  })
+
+  describe('year filter', () => {
+    const yearInput = () => screen.getByRole('textbox', { name: 'Filter by year' })
+    const winnerSelect = () => screen.getByRole('combobox', { name: 'Filter by winner' })
+    const rowYears = () => bodyRows().map((row) => within(row).getAllByRole('cell')[1]?.textContent)
+    const rowWinners = () =>
+      bodyRows().map((row) => within(row).getAllByRole('cell')[3]?.textContent)
+
+    it('shows only the movies of a 4-digit year, with page 1 and no submit button', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?page=2')
+      await waitForRows(range(16, 30))
+
+      await user.type(yearInput(), '1980')
+
+      await waitForRows(range(1, 10))
+      expect(rowYears()).toEqual(Array(10).fill('1980'))
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(requests.at(-1)?.get('page')).toBe('0')
+      expect(screen.queryByRole('button', { name: /search|apply|filter/i })).not.toBeInTheDocument()
+    })
+
+    it('combines the year with the winner filter', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1980')
+      await waitForRows(range(1, 10))
+      await user.selectOptions(winnerSelect(), 'Yes')
+
+      await waitForRows([1])
+      expect(rowYears()).toEqual(['1980'])
+      expect(rowWinners()).toEqual(['Yes'])
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(requests.at(-1)?.get('winner')).toBe('true')
+    })
+
+    it('paginates the filtered total', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1981')
+      await user.selectOptions(winnerSelect(), 'No')
+
+      await waitFor(() => expect(rowWinners()).toEqual(Array(15).fill('No')))
+      await waitFor(() => expect(rowYears()).toEqual(Array(15).fill('1981')))
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 2' })).toBeInTheDocument()
+      expect(within(pagination).queryByRole('button', { name: 'Page 3' })).not.toBeInTheDocument()
+    })
+
+    it('removes the year from the next request when the field is emptied', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList('/list?year=1980')
+      await waitForRows(range(1, 10))
+      expect(yearInput()).toHaveValue('1980')
+
+      await user.clear(yearInput())
+
+      await waitForRows(range(1, 15))
+      expect(requests.at(-1)?.has('year')).toBe(false)
+    })
+
+    it('does not query nor warn while the year has 1 to 3 digits, keeping the previous list', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+      const before = requests.length
+
+      await user.type(yearInput(), '19')
+
+      expect(requests).toHaveLength(before)
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(yearInput()).not.toHaveAttribute('aria-invalid')
+      expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
+    })
+
+    it.each([
+      ['abc', 'type'],
+      ['19999', 'paste'],
+    ])('shows an error linked to the field for %j and does not query it', async (value, how) => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+      const before = requests.length
+
+      if (how === 'type') {
+        await user.type(yearInput(), value)
+      } else {
+        await user.click(yearInput())
+        await user.paste(value)
+      }
+
+      const alert = screen.getByRole('alert')
+      expect(alert).toHaveTextContent('Enter a 4-digit year.')
+      expect(yearInput()).toHaveAttribute('aria-invalid', 'true')
+      expect(yearInput()).toHaveAccessibleDescription('Enter a 4-digit year.')
+      expect(requests).toHaveLength(before)
+    })
+
+    it('keeps the focus in the field when the 4th digit triggers the query', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), '1980')
+
+      await waitForRows(range(1, 10))
+      expect(yearInput()).toHaveFocus()
+    })
+
+    it('accepts a year surrounded by spaces', async () => {
+      const user = userEvent.setup()
+      const requests = recordRequests()
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(yearInput(), ' 1980 ')
+
+      await waitForRows(range(1, 10))
+      expect(requests.at(-1)?.get('year')).toBe('1980')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('restoring from the URL', () => {
+    it('fills the controls and the table from page, year and winner', async () => {
+      renderList('/list?page=2&year=1981&winner=false')
+
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('1981')
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('false')
+      await waitForRows([27, 28, 29, 30])
+      expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page')
+    })
+  })
+
+  describe('invalid URL parameters', () => {
+    it('opens with the defaults and never sends an invalid page, year or winner to the API', async () => {
+      const requests = recordRequests()
+      renderList('/list?page=0&year=99&winner=maybe')
+
+      await waitForRows(range(1, 15))
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('')
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('')
+      expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page')
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.get('page')).toBe('0')
+      expect(requests[0]?.has('year')).toBe(false)
+      expect(requests[0]?.has('winner')).toBe(false)
+    })
+  })
+
+  describe('loading and empty states', () => {
+    it('shows "Loading…" in place of the rows, keeping the title and the filters, without pagination', () => {
+      server.use(http.get(apiBaseUrl, async () => delay('infinite')))
+      renderList()
+
+      expect(within(screen.getByRole('table')).getByRole('status')).toHaveTextContent('Loading…')
+      expect(bodyRows()).toHaveLength(1)
+      expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the previous rows, busy and with pagination, while the next page loads', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
+      const release = holdResponses()
+
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+
+      expect(tableBody()).toHaveAttribute('aria-busy', 'true')
+      expect(firstCellsOf(bodyRows())).toEqual(range(1, 15))
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument()
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      // Só o corpo da tabela fica ocupado: cabeçalho (filtros) e paginação, não.
+      expect(screen.getByRole('table', { name: 'Movies' })).not.toHaveAttribute('aria-busy')
+      expect(
+        screen.getByRole('textbox', { name: 'Filter by year' }).closest('[aria-busy]'),
+      ).toBeNull()
+      expect(
+        screen.getByRole('navigation', { name: 'Pagination' }).closest('[aria-busy="true"]'),
+      ).toBeNull()
+      release()
+      await waitForRows(range(16, 30))
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
+    })
+
+    it.each([
+      ['a year without movies', '/list?year=1800'],
+      ['a combination without movies', '/list?year=1800&winner=true'],
+    ])('shows "No movies found." for %s, with filters and no pagination', async (_name, route) => {
+      renderList(route)
+
+      expect(await screen.findByText('No movies found.')).toBeVisible()
+      expect(bodyRows()).toHaveLength(1)
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it('shows "No movies found." with pagination for a page beyond the total and leads back', async () => {
+      const user = userEvent.setup()
+      renderList('/list?page=99')
+
+      expect(await screen.findByText('No movies found.')).toBeVisible()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(pagination.querySelectorAll('[aria-current]')).toHaveLength(0)
+
+      await user.click(within(pagination).getByRole('button', { name: 'Previous page' }))
+
+      await waitForRows(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('does not let a slow response of an old page overwrite the latest page', async () => {
+      const user = userEvent.setup()
+      let releasePage2: () => void = () => {}
+      const page2Gate = new Promise<void>((resolve) => {
+        releasePage2 = resolve
+      })
+      let page2Served = false
+      server.use(
+        http.get(apiBaseUrl, async ({ request }) => {
+          const params = new URL(request.url).searchParams
+          if (params.get('page') === '1') {
+            await page2Gate
+            page2Served = true
+          }
+          const { status, body } = respondToMoviesQuery(params)
+          return HttpResponse.json(body as JsonBodyType, { status })
+        }),
+      )
+      const { queryClient } = renderList()
+      await waitForRows(range(1, 15))
+
+      await user.click(screen.getByRole('button', { name: 'Page 2' }))
+      await user.click(screen.getByRole('button', { name: 'Page 3' }))
+      await waitForRows(range(31, 40))
+
+      releasePage2()
+      await waitFor(() => expect(page2Served).toBe(true))
+      // A troca para a página 3 cancelou a consulta da página 2: ela fica ociosa e sem dado,
+      // então a resposta atrasada não tem para onde ir (não existe estado "success" a esperar).
+      const page2Key = moviesKeys.list({ page: 2, year: undefined, winner: undefined })
+      await waitFor(() => expect(queryClient.getQueryState(page2Key)?.fetchStatus).toBe('idle'))
+      expect(queryClient.getQueryData(page2Key)).toBeUndefined()
+      expect(firstCellsOf(bodyRows()).filter((id) => id >= 16 && id <= 30)).toEqual([])
+      expect(firstCellsOf(bodyRows())).toEqual(range(31, 40))
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('does not let a slow response of an old filter overwrite the current filters', async () => {
+      const user = userEvent.setup()
+      let releaseYearOnly: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        releaseYearOnly = resolve
+      })
+      let yearOnlyServed = false
+      server.use(
+        http.get(apiBaseUrl, async ({ request }) => {
+          const params = new URL(request.url).searchParams
+          if (params.get('year') === '1980' && !params.has('winner')) {
+            await gate
+            yearOnlyServed = true
+          }
+          const { status, body } = respondToMoviesQuery(params)
+          return HttpResponse.json(body as JsonBodyType, { status })
+        }),
+      )
+      renderList()
+      await waitForRows(range(1, 15))
+
+      await user.type(screen.getByRole('textbox', { name: 'Filter by year' }), '1980')
+      await user.selectOptions(screen.getByRole('combobox', { name: 'Filter by winner' }), 'Yes')
+      await waitForRows([1])
+
+      releaseYearOnly()
+      await waitFor(() => expect(yearOnlyServed).toBe(true))
+      expect(firstCellsOf(bodyRows())).toEqual([1])
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('true')
+    })
+  })
+
+  describe('error state', () => {
+    const failRequests = () =>
+      server.use(
+        http.get(apiBaseUrl, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+      )
+
+    it('shows the error with "Try again", the title and the filters, without pagination or technical details', async () => {
+      failRequests()
+      renderList()
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Could not load this data.')
+      expect(screen.getByRole('alert')).not.toHaveTextContent(/500|boom/)
+      expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
+      expect(screen.getByRole('textbox', { name: 'Filter by year' })).toBeVisible()
+      expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toBeVisible()
+      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument()
+    })
+
+    it.each([
+      ['a body without content', {}],
+      [
+        'a movie without a boolean winner',
+        { content: [{ id: 1, year: 1980, title: 'X' }], totalPages: 1 },
+      ],
+    ])('turns %s into the error state and renders nothing partially', async (_name, body) => {
+      server.use(http.get(apiBaseUrl, () => HttpResponse.json(body)))
+      renderList()
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Could not load this data.')
+      expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.queryByRole('cell', { name: 'X' })).not.toBeInTheDocument()
+      expect(bodyRows()).toHaveLength(1)
+    })
+
+    it('repeats the same query (same page and filters) on "Try again"', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList('/list?page=2&winner=false')
+      await screen.findByRole('alert')
+      const requests = recordRequests()
+
+      await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+      await waitForRows(range(18, 30).concat([32, 33]))
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.get('page')).toBe('1')
+      expect(requests[0]?.get('winner')).toBe('false')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('leaves the error by changing a filter, without "Try again"', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList()
+      await screen.findByRole('alert')
+      server.use(...listHandlers)
+
+      await user.selectOptions(screen.getByRole('combobox', { name: 'Filter by winner' }), 'Yes')
+
+      await waitForRows([1, 11, 31])
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the pagination of the last known total in the error and leaves it by changing the page', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      failRequests()
+
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+
+      expect(await screen.findByRole('alert')).toBeVisible()
+      const pagination = screen.getByRole('navigation', { name: 'Pagination' })
+      expect(within(pagination).getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      )
+      expect(within(pagination).getByRole('button', { name: 'Page 3' })).toBeVisible()
+      server.use(...listHandlers)
+
+      await user.click(within(pagination).getByRole('button', { name: 'Page 3' }))
+
+      await waitForRows(range(31, 40))
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Page 3' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('keeps the pagination and "Try again" when a retry fails again with data in cache', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      await user.click(screen.getByRole('button', { name: 'Next page' }))
+      await waitForRows(range(16, 30))
+      failRequests()
+      await user.click(screen.getByRole('button', { name: 'Previous page' }))
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      retry.focus()
+
+      await user.keyboard('{Enter}')
+
+      await waitFor(() => expect(retry).not.toHaveAttribute('aria-disabled'))
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveFocus()
+      expect(screen.getByRole('alert')).toBeVisible()
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page')
+    })
+
+    it('keeps "Try again" mounted, inert and focused while the retry loads, then shows the rows', async () => {
+      const user = userEvent.setup()
+      failRequests()
+      renderList()
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      await user.click(retry)
+      await waitFor(() => expect(retry).toHaveFocus())
+      const release = holdResponses()
+
+      await user.click(retry)
+
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveAttribute('aria-disabled', 'true')
+      expect(retry).toHaveFocus()
+      expect(tableBody()).toHaveAttribute('aria-busy', 'true')
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      release()
+      await waitForRows(range(1, 15))
+      expect(tableBody()).toHaveAttribute('aria-busy', 'false')
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
+
+    it('keeps the focus on "Try again" when the retry fails again', async () => {
+      const user = userEvent.setup()
+      let release: () => void = () => {}
+      const gate = new Promise<void>((resolve) => {
+        release = resolve
+      })
+      failRequests()
+      renderList()
+      const retry = await screen.findByRole('button', { name: 'Try again' })
+      retry.focus()
+      server.use(
+        http.get(apiBaseUrl, async () => {
+          await gate
+          return HttpResponse.json({ message: 'boom' }, { status: 500 })
+        }),
+      )
+
+      await user.keyboard('{Enter}')
+      expect(retry).toHaveAttribute('aria-disabled', 'true')
+      release()
+
+      await waitFor(() => expect(retry).not.toHaveAttribute('aria-disabled'))
+      expect(screen.getByRole('button', { name: 'Try again' })).toBe(retry)
+      expect(retry).toHaveFocus()
+      expect(screen.getByRole('alert')).toBeVisible()
+    })
+
+    it('keeps the focus on "Next page" when the next page fails, since the pagination stays mounted', async () => {
+      const user = userEvent.setup()
+      renderList()
+      await waitForRows(range(1, 15))
+      screen.getByRole('button', { name: 'Next page' }).focus()
+      failRequests()
+
+      await user.keyboard('{Enter}')
+
+      expect(await screen.findByRole('button', { name: 'Try again' })).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Next page' })).toHaveFocus()
+    })
+  })
+})

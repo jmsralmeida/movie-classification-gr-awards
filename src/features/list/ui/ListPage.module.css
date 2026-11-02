@@ -1,0 +1,47 @@
+.card {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.frame {
+  min-width: 0;
+}
+
+/* Esmaece só as linhas; cabeçalho (com os filtros) e paginação ficam com opacidade total. */
+.frame tbody[aria-busy='true'] {
+  opacity: var(--opacity-busy);
+}
+
+/* Listras e cabeçalhos centralizados do anexo 2, por composição (o DataTable não tem prop de variação). */
+.frame tbody tr:nth-child(even) {
+  background: var(--color-table-stripe-bg);
+}
+
+/* `table th` é mais específico que `.table th` do DataTable, sem depender da ordem de carga. */
+.frame table th {
+  text-align: center;
+}
+
+/* ID e Winner? não quebram dígitos nem palavras; Year e Title absorvem o aperto.
+   A linha de status (td com colSpan) fica de fora, para a mensagem poder quebrar. */
+.frame td:first-child:not([colspan]),
+.frame td:last-child:not([colspan]) {
+  white-space: nowrap;
+}
+
+.frame select {
+  width: 100%;
+  min-width: var(--filter-select-min-width);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.card > nav {
+  margin-top: var(--space-4);
+}

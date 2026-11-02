@@ -12,9 +12,10 @@ export function renderWithProviders(ui: ReactElement, { route = '/' }: RenderOpt
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   })
-  return render(
+  const result = render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
     </QueryClientProvider>,
   )
+  return { ...result, queryClient }
 }

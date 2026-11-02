@@ -1,23 +1,25 @@
 import { expect, test } from '@playwright/test'
-import { mockDashboardApi } from './support/mockApi.ts'
+import { mockDashboardApi, mockListApi } from './support/mockApi.ts'
 
 test('browser back button and a URL opened directly show the right view', async ({ page }) => {
   await mockDashboardApi(page)
+  await mockListApi(page)
   await page.goto('/list')
-  await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
 
   await page.getByRole('link', { name: 'Dashboard' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
 
   await page.goBack()
   await expect(page).toHaveURL(/\/list$/)
-  await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
 })
 
 test('real CSS: Tab and Enter walk the menu links and the focus ring is visible', async ({
   page,
 }) => {
   await mockDashboardApi(page)
+  await mockListApi(page)
   await page.goto('/dashboard')
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
   const dashboard = page.getByRole('link', { name: 'Dashboard' })
@@ -32,7 +34,7 @@ test('real CSS: Tab and Enter walk the menu links and the focus ring is visible'
   await expect(list).not.toHaveCSS('outline-style', 'none')
 
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
 })
 
 test('real CSS: no horizontal scroll; header and menu stay in place while tall content scrolls', async ({
@@ -76,5 +78,5 @@ test('real network: with the API blocked the shell still loads and navigates', a
   await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
 
   await page.getByRole('link', { name: 'List' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'List' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'List movies' })).toBeVisible()
 })

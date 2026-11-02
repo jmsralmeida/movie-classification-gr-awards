@@ -1,6 +1,7 @@
 import { useId, useState, type SubmitEvent } from 'react'
 import { useSearchParams } from 'react-router'
-import { parseYear, YEAR_PARAM } from '../model/year'
+import { parseYear } from '../../../shared/lib/year'
+import { YEAR_PARAM } from '../model/year'
 import styles from './WinnersSearchForm.module.css'
 
 interface WinnersSearchFormProps {

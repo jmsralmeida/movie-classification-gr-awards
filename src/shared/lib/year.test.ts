@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseYear, YEAR_PARAM } from './year'
+import { parseYear } from './year'
 
 describe('parseYear', () => {
   it.each([
@@ -24,9 +24,5 @@ describe('parseYear', () => {
     '２０１８',
   ])('treats %j as no year', (raw) => {
     expect(parseYear(raw)).toBeUndefined()
-  })
-
-  it('uses "year" as the URL parameter', () => {
-    expect(YEAR_PARAM).toBe('year')
   })
 })

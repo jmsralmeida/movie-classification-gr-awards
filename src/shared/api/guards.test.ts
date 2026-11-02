@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError } from './apiError'
-import { expectArray, expectNumber, expectRecord, expectString, isRecord } from './guards'
+import {
+  expectArray,
+  expectBoolean,
+  expectNumber,
+  expectRecord,
+  expectString,
+  isRecord,
+} from './guards'
 
 function catchError(fn: () => unknown): unknown {
   try {
@@ -31,6 +38,8 @@ describe('expect guards', () => {
     expect(expectArray(list)).toBe(list)
     expect(expectString('a')).toBe('a')
     expect(expectNumber(2018)).toBe(2018)
+    expect(expectBoolean(true)).toBe(true)
+    expect(expectBoolean(false)).toBe(false)
   })
 
   it.each([
@@ -45,6 +54,11 @@ describe('expect guards', () => {
     ['expectNumber', expectNumber, NaN],
     ['expectNumber', expectNumber, Infinity],
     ['expectNumber', expectNumber, -Infinity],
+    ['expectBoolean', expectBoolean, 1],
+    ['expectBoolean', expectBoolean, 0],
+    ['expectBoolean', expectBoolean, 'true'],
+    ['expectBoolean', expectBoolean, null],
+    ['expectBoolean', expectBoolean, undefined],
   ])('%s rejects %j with a parse ApiError', (_name, guard, value) => {
     const error = catchError(() => guard(value))
 

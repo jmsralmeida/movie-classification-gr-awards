@@ -11,9 +11,14 @@
   --color-surface: #ffffff;
   --color-border: #dee2e6;
   --color-table-header-bg: #f8f9fa;
+  --color-table-stripe-bg: #f2f2f2;
   --color-error: #b02a37;
   --color-button-bg: #0d6efd;
   --color-button-text: #ffffff;
+  --color-pagination-disabled: #6c757d;
+
+  /* Esmaecimento durante a troca de página */
+  --opacity-busy: 0.6;
 
   /* Foco */
   --focus-outline-width: 2px;
@@ -22,6 +27,7 @@
   /* Dimensões do layout */
   --menu-width: 11rem;
   --header-height: 3rem;
+  --filter-select-min-width: 6rem;
 
   /* Espaçamentos */
   --space-1: 0.25rem;

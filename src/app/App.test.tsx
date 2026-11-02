@@ -2,13 +2,14 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { dashboardHandlers } from '../features/dashboard/testing/handlers'
+import { listHandlers } from '../features/list/testing/handlers'
 import { renderWithProviders } from '../test/render'
 import { server } from '../test/server'
 import { App } from './App'
 
 describe('App', () => {
   beforeEach(() => {
-    server.use(...dashboardHandlers)
+    server.use(...dashboardHandlers, ...listHandlers)
   })
 
   it('shows the app title in the banner', () => {
@@ -36,13 +37,41 @@ describe('App', () => {
 
     await user.click(screen.getByRole('link', { name: 'List' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
+  })
+
+  it('marks the link of the current view with aria-current and follows the navigation', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<App />)
+    const nav = within(screen.getByRole('navigation'))
+    expect(nav.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'List' })).not.toHaveAttribute('aria-current')
+
+    await user.click(nav.getByRole('link', { name: 'List' }))
+
+    expect(nav.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('opens the first page without filters when the List link is used from a filtered list', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<App />, { route: '/list?page=2&winner=true' })
+    expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('true')
+
+    await user.click(screen.getByRole('link', { name: 'List' }))
+
+    expect(screen.getByRole('combobox', { name: 'Filter by winner' })).toHaveValue('')
+    expect(screen.getByRole('textbox', { name: 'Filter by year' })).toHaveValue('')
+    expect(await screen.findByRole('button', { name: 'Page 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
   })
 
   it.each(['/List', '/list/'])('opens the List view at %s', (route) => {
     renderWithProviders(<App />, { route })
 
-    expect(screen.getByRole('heading', { level: 1, name: 'List' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'List movies' })).toBeInTheDocument()
   })
 
   it('shows "Page not found" inside the shell for an unknown URL', () => {

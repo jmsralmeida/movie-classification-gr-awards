@@ -37,26 +37,13 @@ describe('Panel', () => {
     expect(screen.getByRole('textbox', { name: 'Sample control' })).toBeVisible()
   })
 
-  it('shows a loading status', () => {
-    renderPanel({ status: 'loading' })
-
-    expect(screen.getByRole('status')).toHaveTextContent('Loading')
-  })
-
-  it('shows the error alert and calls onRetry once when "Try again" is clicked', async () => {
+  it('delegates the error state to the status message, wired to onRetry', async () => {
     const user = userEvent.setup()
     const { onRetry } = renderPanel({ status: 'error' })
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Could not load this data.')
     await user.click(screen.getByRole('button', { name: 'Try again' }))
 
     expect(onRetry).toHaveBeenCalledTimes(1)
-  })
-
-  it('shows the received empty message', () => {
-    renderPanel({ status: 'empty', emptyMessage: 'No items yet.' })
-
-    expect(screen.getByText('No items yet.')).toBeInTheDocument()
   })
 
   it('shows the children on success', () => {

@@ -1,0 +1,25 @@
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-error);
+}
+
+.error p {
+  margin: 0;
+}
+
+.button {
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  color: var(--color-button-text);
+  background: var(--color-button-bg);
+  border: 0;
+  cursor: pointer;
+}
+
+.button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: var(--opacity-busy);
+}
