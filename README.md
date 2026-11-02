@@ -8,6 +8,8 @@ Golden Raspberry Awards, consumindo `https://challenge.outsera.tech/api/movies`.
 - **Lista** (`/list`): tabela de filmes (ID, Year, Title, Winner?) com paginação e filtros por
   ano e por vencedor.
 
+**App publicado:** https://outsera-razzies.vercel.app/dashboard (deploy na Vercel).
+
 Requisitos do desafio: [`docs/requirements/challenge.md`](docs/requirements/challenge.md).
 Regras do projeto: [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
 
